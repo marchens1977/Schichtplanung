@@ -1,4 +1,13 @@
 <!DOCTYPE html>
+<!--
+  HINWEIS FÜR DIE WEITERVERWENDUNG:
+  Diese Datei enthält Verbesserungen bei Datumsbehandlung, CSV-Export und
+  clientseitigen Berechtigungsprüfungen. Die bisherige Anmeldung mit lokal
+  gespeicherten Benutzern und dem fest eingebauten Admin-Passwort ist NICHT
+  produktionssicher. Vor Veröffentlichung im Internet müssen Firebase
+  Authentication und passende Firestore Security Rules eingerichtet werden.
+  Clientseitige Prüfungen allein schützen die Datenbank nicht.
+-->
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -10,10 +19,10 @@
         import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyD_1D3R8gywh07q-FZ55HL9lcxN6s9tX...",
+            apiKey: "AIzaSyD_1D3R8gywh07q-FZ55HL9lcxNgtd5FJM",
             authDomain: "arbeitsplatzbuchung-a0f93.firebaseapp.com",
             projectId: "arbeitsplatzbuchung-a0f93",
-            storageBucket: "arbeitsplatzbuchung-a0f93.appspot.com",
+            storageBucket: "arbeitsplatzbuchung-a0f93.firebasestorage.app",
             messagingSenderId: "527612842869",
             appId: "1:527612842869:web:fc5559629841724321b93c",
             measurementId: "G-2Z7CJKMWEJ"
