@@ -103,7 +103,9 @@
                                     <tr class="border-b text-slate-500 text-xs sm:text-sm">
                                         <th class="p-2 sm:p-3">Mitarbeiter</th>
                                         <th class="p-2 sm:p-3 desk-col-header">Platz</th>
+                                        <th class="p-2 sm:p-3">Typ</th>
                                         <th class="p-2 sm:p-3">Uhrzeit</th>
+                                        <th class="p-2 sm:p-3">Pause</th>
                                         <th class="p-2 sm:p-3">Aktion</th>
                                     </tr>
                                 </thead>
@@ -147,11 +149,28 @@
                                             <option value="">Uhrzeit wählen</option>
                                         </select>
                                     </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-slate-600 mb-1">Pausenzeit</label>
+                                        <select id="adminDirectAssignBreak" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+                                            <option value="">Pause wählen</option>
+                                            <option value="0 Minuten">0 Minuten</option>
+                                            <option value="15 Minuten">15 Minuten</option>
+                                            <option value="30 Minuten">30 Minuten</option>
+                                            <option value="45 Minuten">45 Minuten</option>
+                                            <option value="60 Minuten">60 Minuten</option>
+                                            <option value="75 Minuten">75 Minuten</option>
+                                            <option value="90 Minuten">90 Minuten</option>
+                                        </select>
+                                    </div>
                                     <div id="adminDirectAssignDeskWrapper" class="hidden">
                                         <label class="block text-[10px] font-semibold text-slate-600 mb-1">Platz (optional)</label>
                                         <select id="adminDirectAssignDesk" class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
                                             <option value="">Kein Platz</option>
                                         </select>
+                                    </div>
+                                    <div class="flex items-center gap-2 pt-1">
+                                        <input type="checkbox" id="adminDirectAssignHO" class="w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500">
+                                        <label for="adminDirectAssignHO" class="text-xs font-semibold text-slate-700">Homeoffice (HO)</label>
                                     </div>
                                     <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold py-2 rounded-lg transition-colors">Schicht zuweisen</button>
                                 </form>
@@ -188,7 +207,9 @@
                                         <tr class="border-b text-slate-500 text-xs">
                                             <th class="p-2">Datum</th>
                                             <th class="p-2 desk-col-header">Platz</th>
+                                            <th class="p-2">Typ</th>
                                             <th class="p-2">Uhrzeit</th>
+                                            <th class="p-2">Pause</th>
                                             <th class="p-2">Aktion</th>
                                         </tr>
                                     </thead>
@@ -249,9 +270,28 @@
                             </select>
                         </div>
 
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="modalNewHO" class="w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500">
+                            <label for="modalNewHO" class="text-xs font-semibold text-slate-700">Homeoffice (HO)</label>
+                        </div>
+
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Startuhrzeit:</label>
                             <select id="modalNewStart" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Pausenzeit:</label>
+                            <select id="modalNewBreak" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                                <option value="">Pause wählen</option>
+                                <option value="0 Minuten">0 Minuten</option>
+                                <option value="15 Minuten">15 Minuten</option>
+                                <option value="30 Minuten">30 Minuten</option>
+                                <option value="45 Minuten">45 Minuten</option>
+                                <option value="60 Minuten">60 Minuten</option>
+                                <option value="75 Minuten">75 Minuten</option>
+                                <option value="90 Minuten">90 Minuten</option>
                             </select>
                         </div>
 
@@ -300,6 +340,19 @@
                             <select id="assignStartTime" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
                             </select>
                         </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Pausenzeit:</label>
+                            <select id="assignBreakTime" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                                <option value="">Pause wählen</option>
+                                <option value="0 Minuten">0 Minuten</option>
+                                <option value="15 Minuten">15 Minuten</option>
+                                <option value="30 Minuten">30 Minuten</option>
+                                <option value="45 Minuten">45 Minuten</option>
+                                <option value="60 Minuten">60 Minuten</option>
+                                <option value="75 Minuten">75 Minuten</option>
+                                <option value="90 Minuten">90 Minuten</option>
+                            </select>
+                        </div>
                         <div class="flex justify-end gap-2 pt-2 border-t">
                             <button type="button" id="cancelAssignBtn" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg">Abbrechen</button>
                             <button type="submit" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg">Zuweisen</button>
@@ -326,9 +379,28 @@
                             </select>
                         </div>
 
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="userEditHO" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
+                            <label for="userEditHO" class="text-xs font-semibold text-slate-700">Homeoffice (HO)</label>
+                        </div>
+
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Startuhrzeit:</label>
                             <select id="userEditStartSelect" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Pausenzeit:</label>
+                            <select id="userEditBreakSelect" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Pause wählen</option>
+                                <option value="0 Minuten">0 Minuten</option>
+                                <option value="15 Minuten">15 Minuten</option>
+                                <option value="30 Minuten">30 Minuten</option>
+                                <option value="45 Minuten">45 Minuten</option>
+                                <option value="60 Minuten">60 Minuten</option>
+                                <option value="75 Minuten">75 Minuten</option>
+                                <option value="90 Minuten">90 Minuten</option>
                             </select>
                         </div>
 
@@ -370,7 +442,7 @@
                 <!-- Sektor 1: Eigene Schicht eintragen -->
                 <div class="bg-white p-6 rounded-xl shadow-md space-y-4">
                     <h2 class="text-xl font-bold text-slate-800 border-b pb-3">1. Eigene Schicht eintragen</h2>
-                    <form id="bookingForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <form id="bookingForm" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                         <div>
                             <label class="block text-xs sm:text-sm font-medium mb-1">Mitarbeiter</label>
                             <input type="text" id="employeeName" readonly class="w-full p-2 bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-semibold cursor-not-allowed text-sm">
@@ -380,12 +452,29 @@
                             <input type="date" id="bookingDate" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs sm:text-sm font-medium mb-1">Schicht ab Uhrzeit</label>
-                            <select id="startTime" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                            <label class="block text-xs sm:text-sm font-medium mb-1">Schicht ab Uhrzeit <span class="text-red-500">*</span></label>
+                            <select id="startTime" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
                                 <option value="">Uhrzeit wählen</option>
                             </select>
                         </div>
                         <div>
+                            <label class="block text-xs sm:text-sm font-medium mb-1">Pausenzeit <span class="text-red-500">*</span></label>
+                            <select id="breakTime" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                                <option value="">Pause wählen</option>
+                                <option value="0 Minuten">0 Minuten</option>
+                                <option value="15 Minuten">15 Minuten</option>
+                                <option value="30 Minuten">30 Minuten</option>
+                                <option value="45 Minuten">45 Minuten</option>
+                                <option value="60 Minuten">60 Minuten</option>
+                                <option value="75 Minuten">75 Minuten</option>
+                                <option value="90 Minuten">90 Minuten</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <input type="checkbox" id="bookingIsHO" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
+                                <label for="bookingIsHO" class="text-xs sm:text-sm font-medium text-slate-700">Homeoffice (HO)</label>
+                            </div>
                             <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium p-2.5 rounded-lg transition-colors text-sm">
                                 Schicht eintragen
                             </button>
@@ -448,8 +537,10 @@
                             <thead>
                                 <tr class="border-b text-slate-500 text-xs sm:text-sm">
                                     <th class="p-3 desk-col-header">Platz</th>
+                                    <th class="p-3">Typ</th>
                                     <th class="p-3">Datum</th>
                                     <th class="p-3">Uhrzeit</th>
+                                    <th class="p-3">Pause</th>
                                     <th class="p-3">Aktion</th>
                                 </tr>
                             </thead>
@@ -473,8 +564,10 @@
                                 <tr class="border-b text-slate-500 text-xs sm:text-sm">
                                     <th class="p-2 sm:p-3 desk-col-header">Platz</th>
                                     <th class="p-2 sm:p-3">Name</th>
+                                    <th class="p-2 sm:p-3">Typ</th>
                                     <th class="p-2 sm:p-3">Datum</th>
                                     <th class="p-2 sm:p-3">Uhrzeit</th>
+                                    <th class="p-2 sm:p-3">Pause</th>
                                     <th class="p-2 sm:p-3">Aktion</th>
                                 </tr>
                             </thead>
@@ -531,8 +624,10 @@
         const adminDirectAssignUser = document.getElementById('adminDirectAssignUser');
         const adminDirectAssignDate = document.getElementById('adminDirectAssignDate');
         const adminDirectAssignStart = document.getElementById('adminDirectAssignStart');
+        const adminDirectAssignBreak = document.getElementById('adminDirectAssignBreak');
         const adminDirectAssignDeskWrapper = document.getElementById('adminDirectAssignDeskWrapper');
         const adminDirectAssignDesk = document.getElementById('adminDirectAssignDesk');
+        const adminDirectAssignHO = document.getElementById('adminDirectAssignHO');
 
         const adminEditContainer = document.getElementById('adminEditContainer');
         const adminEditUserForm = document.getElementById('adminEditUserForm');
@@ -555,7 +650,9 @@
         const modalFormattedDatePreview = document.getElementById('modalFormattedDatePreview');
         const modalNewDesk = document.getElementById('modalNewDesk');
         const modalDeskGroup = document.getElementById('modalDeskGroup');
+        const modalNewHO = document.getElementById('modalNewHO');
         const modalNewStart = document.getElementById('modalNewStart');
+        const modalNewBreak = document.getElementById('modalNewBreak');
         const cancelAdminMoveBtn = document.getElementById('cancelAdminMoveBtn');
 
         const adminPlanDragModal = document.getElementById('adminPlanDragModal');
@@ -571,6 +668,7 @@
         const assignTargetDeskDisplay = document.getElementById('assignTargetDeskDisplay');
         const assignEmployeeSelect = document.getElementById('assignEmployeeSelect');
         const assignStartTime = document.getElementById('assignStartTime');
+        const assignBreakTime = document.getElementById('assignBreakTime');
         const cancelAssignBtn = document.getElementById('cancelAssignBtn');
         const adminAssignForm = document.getElementById('adminAssignForm');
 
@@ -580,7 +678,9 @@
         const userEditDateInput = document.getElementById('userEditDateInput');
         const userEditDeskSelect = document.getElementById('userEditDeskSelect');
         const userEditDeskGroup = document.getElementById('userEditDeskGroup');
+        const userEditHO = document.getElementById('userEditHO');
         const userEditStartSelect = document.getElementById('userEditStartSelect');
+        const userEditBreakSelect = document.getElementById('userEditBreakSelect');
         const cancelUserEditBtn = document.getElementById('cancelUserEditBtn');
 
         const roomPlanCard = document.getElementById('roomPlanCard');
@@ -745,13 +845,15 @@
 
                 dayBookings.sort((a, b) => a.start.localeCompare(b.start));
 
-                let csvContent = "Mitarbeiter;Platz;Uhrzeit;Datum\n";
+                let csvContent = "Mitarbeiter;Platz;Typ;Uhrzeit;Pause;Datum\n";
                 dayBookings.forEach(b => {
                     const name = b.name || "";
                     const desk = b.desk || "-";
+                    const type = b.isHO ? "HO" : "Büro";
                     const start = b.start ? `ab ${b.start} Uhr` : "";
+                    const breakTime = b.breakTime || "0 Minuten";
                     const date = formatDateDE(b.date);
-                    csvContent += `"${name}";"${desk}";"${start}";"${date}"\n`;
+                    csvContent += `"${name}";"${desk}";"${type}";"${start}";"${breakTime}";"${date}"\n`;
                 });
 
                 const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -941,7 +1043,9 @@
             const username = adminDirectAssignUser.value;
             const date = adminDirectAssignDate.value;
             const start = adminDirectAssignStart.value;
+            const breakTime = adminDirectAssignBreak.value;
             const desk = settings.deskBookingEnabled ? adminDirectAssignDesk.value : "";
+            const isHO = adminDirectAssignHO.checked;
 
             const dayCount = bookings.filter(b => b.date === date).length;
             if (dayCount >= 16) {
@@ -960,7 +1064,7 @@
                 return;
             }
 
-            if (settings.deskBookingEnabled && desk) {
+            if (settings.deskBookingEnabled && desk && !isHO) {
                 const deskConflict = bookings.find(b => b.date === date && b.desk === desk);
                 if (deskConflict) {
                     alert(`Der Platz ${desk} ist am ${formatDateDE(date)} bereits durch ${deskConflict.name} belegt!`);
@@ -968,7 +1072,7 @@
                 }
             }
 
-            bookings.push({ desk, name: username, date, start });
+            bookings.push({ desk: isHO ? "" : desk, name: username, date, start, breakTime, isHO });
             await saveCloudData("bookings", bookings);
 
             adminDirectAssignForm.reset();
@@ -1065,7 +1169,7 @@
             const userBookings = bookings.filter(b => b.name.toLowerCase() === username.toLowerCase());
 
             if (userBookings.length === 0) {
-                adminUserBookingsTableBody.innerHTML = '<tr><td colspan="4" class="p-3 text-center text-slate-400">Keine Schichten vorhanden.</td></tr>';
+                adminUserBookingsTableBody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-slate-400">Keine Schichten vorhanden.</td></tr>';
             } else {
                 userBookings.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
                 userBookings.forEach(b => {
@@ -1073,10 +1177,13 @@
                     const tr = document.createElement('tr');
                     tr.className = 'border-b';
                     let deskCell = settings.deskBookingEnabled ? `<td class="p-2 font-bold text-blue-600">${b.desk || '-'}</td>` : '';
+                    let typeCell = `<td class="p-2 font-semibold ${b.isHO ? 'text-purple-600' : 'text-slate-700'}">${b.isHO ? 'HO' : 'Büro'}</td>`;
                     tr.innerHTML = `
                         <td class="p-2 font-medium">${formatDateDE(b.date)}</td>
                         ${deskCell}
+                        ${typeCell}
                         <td class="p-2">ab ${b.start} Uhr</td>
+                        <td class="p-2">${b.breakTime || '0 Minuten'}</td>
                         <td class="p-2 flex gap-1 items-center">
                             <button type="button" onclick="openAdminMoveModal(${globalIndex})" class="text-blue-600 hover:text-blue-800 font-medium text-xs bg-blue-50 px-2 py-1 rounded border border-blue-200">Bearbeiten</button>
                             <button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2 py-1 rounded border border-red-200">Löschen</button>
@@ -1099,6 +1206,8 @@
             modalEmployeeName.textContent = booking.name;
             modalNewDate.value = booking.date;
             modalFormattedDatePreview.textContent = formatDateDE(booking.date);
+            modalNewHO.checked = !!booking.isHO;
+            modalNewBreak.value = booking.breakTime || '0 Minuten';
 
             if (settings.deskBookingEnabled) {
                 modalDeskGroup.classList.remove('hidden');
@@ -1139,6 +1248,8 @@
             const newDate = modalNewDate.value;
             const newDesk = settings.deskBookingEnabled ? modalNewDesk.value : "";
             const newStart = modalNewStart.value;
+            const newBreak = modalNewBreak.value;
+            const newHO = modalNewHO.checked;
 
             if (newDate !== booking.date) {
                 const dayCount = bookings.filter(b => b.date === newDate).length;
@@ -1154,7 +1265,7 @@
                 return;
             }
 
-            if (settings.deskBookingEnabled && newDesk) {
+            if (settings.deskBookingEnabled && newDesk && !newHO) {
                 const conflict = bookings.find((b, idx) => idx !== gIndex && b.desk === newDesk && b.date === newDate);
                 if (conflict) {
                     alert(`Der Platz ${newDesk} ist am ${formatDateDE(newDate)} bereits durch ${conflict.name} belegt!`);
@@ -1163,8 +1274,10 @@
             }
 
             booking.date = newDate;
-            booking.desk = newDesk;
+            booking.desk = newHO ? "" : newDesk;
             booking.start = newStart;
+            booking.breakTime = newBreak;
+            booking.isHO = newHO;
 
             await saveCloudData("bookings", bookings);
 
@@ -1261,6 +1374,7 @@
             e.preventDefault();
             const empName = assignEmployeeSelect.value;
             const startTime = assignStartTime.value;
+            const breakTime = assignBreakTime.value;
             const date = document.getElementById('bookingDate').value;
 
             const dayCount = bookings.filter(b => b.date === date).length;
@@ -1280,7 +1394,7 @@
                 return;
             }
 
-            const newBooking = { desk: currentAdminAssignDesk, name: empName, date, start: startTime };
+            const newBooking = { desk: currentAdminAssignDesk, name: empName, date, start: startTime, breakTime, isHO: false };
             bookings.push(newBooking);
 
             await saveCloudData("bookings", bookings);
@@ -1303,6 +1417,8 @@
 
             userEditBookingIndex.value = globalIndex;
             userEditDateInput.value = booking.date;
+            userEditHO.checked = !!booking.isHO;
+            userEditBreakSelect.value = booking.breakTime || '0 Minuten';
 
             if (settings.deskBookingEnabled) {
                 userEditDeskGroup.classList.remove('hidden');
@@ -1342,6 +1458,8 @@
             const newDate = userEditDateInput.value;
             const newDesk = settings.deskBookingEnabled ? userEditDeskSelect.value : "";
             const newStart = userEditStartSelect.value;
+            const newBreak = userEditBreakSelect.value;
+            const newHO = userEditHO.checked;
 
             if (!checkLeadTimeOrAlert(newDate) || !checkLeadTimeOrAlert(booking.date)) return;
 
@@ -1359,7 +1477,7 @@
                 return;
             }
 
-            if (settings.deskBookingEnabled && newDesk) {
+            if (settings.deskBookingEnabled && newDesk && !newHO) {
                 const conflict = bookings.find((b, idx) => idx !== gIndex && b.desk === newDesk && b.date === newDate);
                 if (conflict) {
                     alert(`Der Platz ${newDesk} ist an diesem Tag bereits belegt!`);
@@ -1368,8 +1486,10 @@
             }
 
             booking.date = newDate;
-            booking.desk = newDesk;
+            booking.desk = newHO ? "" : newDesk;
             booking.start = newStart;
+            booking.breakTime = newBreak;
+            booking.isHO = newHO;
 
             await saveCloudData("bookings", bookings);
 
@@ -1522,7 +1642,7 @@
 
         function getBookingForDesk(deskId, date) {
             if (!date) return null;
-            return bookings.find(b => b.desk === deskId && b.date === date) || null;
+            return bookings.find(b => b.desk === deskId && b.date === date && !b.isHO) || null;
         }
 
         function renderRoomPlan() {
@@ -1616,7 +1736,7 @@
             const dayBookings = bookings.filter(b => b.date === selDate);
 
             if (dayBookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${settings.deskBookingEnabled ? 4 : 3}" class="p-3 text-center text-slate-400">An diesem Tag sind keine Schichten eingetragen.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${settings.deskBookingEnabled ? 6 : 5}" class="p-3 text-center text-slate-400">An diesem Tag sind keine Schichten eingetragen.</td></tr>`;
                 return;
             }
 
@@ -1627,10 +1747,13 @@
                 const tr = document.createElement('tr');
                 tr.className = 'border-b hover:bg-slate-50';
                 let deskCell = settings.deskBookingEnabled ? `<td class="p-2 sm:p-3 font-bold text-blue-600">${b.desk || '-'}</td>` : '';
+                let typeCell = `<td class="p-2 sm:p-3 font-semibold ${b.isHO ? 'text-purple-600' : 'text-slate-700'}">${b.isHO ? 'HO' : 'Büro'}</td>`;
                 tr.innerHTML = `
                     <td class="p-2 sm:p-3 font-semibold text-slate-800">${b.name}</td>
                     ${deskCell}
+                    ${typeCell}
                     <td class="p-2 sm:p-3">ab ${b.start} Uhr</td>
+                    <td class="p-2 sm:p-3">${b.breakTime || '0 Minuten'}</td>
                     <td class="p-2 sm:p-3 flex gap-1 items-center">
                         <button type="button" onclick="openAdminMoveModal(${globalIndex})" class="text-blue-600 hover:text-blue-800 font-medium text-xs bg-blue-50 px-2 py-1 rounded border border-blue-200">Bearbeiten</button>
                         <button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2 py-1 rounded border border-red-200">Löschen</button>
@@ -1648,7 +1771,7 @@
             const myBookings = bookings.filter(b => b.name.toLowerCase() === currentUser.toLowerCase());
 
             if (myBookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${settings.deskBookingEnabled ? 4 : 3}" class="p-4 text-center text-slate-400">Sie haben derzeit keine Schichten eingetragen.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${settings.deskBookingEnabled ? 6 : 5}" class="p-4 text-center text-slate-400">Sie haben derzeit keine Schichten eingetragen.</td></tr>`;
                 return;
             }
 
@@ -1659,10 +1782,13 @@
                 const tr = document.createElement('tr');
                 tr.className = 'border-b hover:bg-slate-50';
                 let deskCell = settings.deskBookingEnabled ? `<td class="p-3 font-semibold text-blue-600">${b.desk || '-'}</td>` : '';
+                let typeCell = `<td class="p-3 font-semibold ${b.isHO ? 'text-purple-600' : 'text-slate-700'}">${b.isHO ? 'HO' : 'Büro'}</td>`;
                 tr.innerHTML = `
                     ${deskCell}
+                    ${typeCell}
                     <td class="p-3">${formatDateDE(b.date)}</td>
                     <td class="p-3">ab ${b.start} Uhr</td>
+                    <td class="p-3">${b.breakTime || '0 Minuten'}</td>
                     <td class="p-3 flex gap-2 items-center">
                         <button type="button" onclick="openUserEditBookingModal(${globalIndex})" class="text-blue-600 hover:text-blue-800 font-medium text-xs bg-blue-50 px-2.5 py-1 rounded border border-blue-200">Ändern</button>
                         <button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2.5 py-1 rounded border border-red-200">Löschen</button>
@@ -1684,7 +1810,7 @@
             const filteredBookings = bookings.filter(b => b.date === selectedDateStr);
 
             if (filteredBookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${settings.deskBookingEnabled ? 5 : 4}" class="p-4 text-center text-slate-400">Für dieses Datum sind keine Schichten eingetragen.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${settings.deskBookingEnabled ? 7 : 6}" class="p-4 text-center text-slate-400">Für dieses Datum sind keine Schichten eingetragen.</td></tr>`;
                 return;
             }
 
@@ -1695,11 +1821,14 @@
                 const tr = document.createElement('tr');
                 tr.className = 'border-b hover:bg-slate-50';
                 let deskCell = settings.deskBookingEnabled ? `<td class="p-2 sm:p-3 font-semibold text-blue-600">${b.desk || '-'}</td>` : '';
+                let typeCell = `<td class="p-2 sm:p-3 font-semibold ${b.isHO ? 'text-purple-600' : 'text-slate-700'}">${b.isHO ? 'HO' : 'Büro'}</td>`;
                 tr.innerHTML = `
                     ${deskCell}
                     <td class="p-2 sm:p-3 font-medium">${b.name}</td>
+                    ${typeCell}
                     <td class="p-2 sm:p-3">${formatDateDE(b.date)}</td>
                     <td class="p-2 sm:p-3">ab ${b.start} Uhr</td>
+                    <td class="p-2 sm:p-3">${b.breakTime || '0 Minuten'}</td>
                     <td class="p-2 sm:p-3">
                         ${(b.name === currentUser || isAdmin) ? `<button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs">Löschen</button>` : '<span class="text-slate-300 font-medium text-xs">-</span>'}
                     </td>
@@ -1746,7 +1875,9 @@
                 const name = currentUser;
                 const date = document.getElementById('bookingDate').value;
                 const start = document.getElementById('startTime').value;
-                const desk = settings.deskBookingEnabled ? (selectedDesk || "") : "";
+                const breakTime = document.getElementById('breakTime').value;
+                const isHO = document.getElementById('bookingIsHO').checked;
+                const desk = (settings.deskBookingEnabled && !isHO) ? (selectedDesk || "") : "";
 
                 if (!checkLeadTimeOrAlert(date)) return;
 
@@ -1762,12 +1893,12 @@
                     return;
                 }
 
-                if (settings.deskBookingEnabled && desk && getBookingForDesk(desk, date)) {
+                if (settings.deskBookingEnabled && desk && !isHO && getBookingForDesk(desk, date)) {
                     alert('Dieser Platz ist an diesem Tag bereits belegt.');
                     return;
                 }
 
-                const newBooking = { desk, name, date, start };
+                const newBooking = { desk, name, date, start, breakTime, isHO };
                 bookings.push(newBooking);
 
                 await saveCloudData("bookings", bookings);
@@ -1784,6 +1915,8 @@
                 selectedDesk = null;
                 const deskDisplay = document.getElementById('selectedDeskDisplay');
                 if (deskDisplay) deskDisplay.value = '';
+                document.getElementById('bookingIsHO').checked = false;
+                document.getElementById('breakTime').value = '';
                 if (settings.deskBookingEnabled) renderRoomPlan();
 
                 alert('Schicht erfolgreich eingetragen!');
