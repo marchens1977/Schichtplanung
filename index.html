@@ -105,6 +105,9 @@ const same=(a,b)=>String(a).toLowerCase()===String(b).toLowerCase();
 const pad=n=>String(n).padStart(2,'0');
 const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const today=()=>iso(new Date());
+const isWeekend=s=>{if(!s)return false;const[y,m,d]=s.split('-').map(Number);const w=new Date(y,m-1,d).getDay();return w===0||w===6;};
+const nextWeekday=()=>{const d=new Date();while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);return iso(d);};
+const WE_MSG='Schichten sind nur von Montag bis Freitag möglich.';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validName=n=>/^[\p{L}\p{N}._-]{1,40}$/u.test(n||'');
 const NAME_MSG='Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten.';
@@ -246,6 +249,7 @@ $('form').onsubmit=async e=>{
   if(!name)return alert('Bitte einen Mitarbeiter wählen.');
   const date=$('f-date').value, isHO=$('f-ho').checked;
   const sh={name,date,start:$('f-start').value,breakTime:$('f-break').value,isHO,desk:(settings.desks&&!isHO)?$('f-desk').value:''};
+  if(isWeekend(date))return alert(WE_MSG);
   if(!leadOk(date)||(old&&!leadOk(old.date)))return leadAlert();
   if(!isHO&&shifts.filter(s=>s.date===date&&!s.isHO&&s.id!==editId).length>=MAX)
     return alert(`Alle ${MAX} Büroplätze sind an diesem Tag vergeben. Homeoffice ist weiterhin möglich.`);
@@ -268,7 +272,7 @@ function startEdit(id){
 
 function resetForm(){
   editId=null;$('form').reset();$('f-user').disabled=false;
-  $('f-date').value=today();
+  $('f-date').value=nextWeekday();
   $('f-title').textContent='Schicht eintragen';$('f-submit').textContent='Schicht eintragen';$('f-cancel').classList.add('hidden');
 }
 $('f-cancel').onclick=()=>{resetForm();render();};
@@ -351,9 +355,10 @@ document.addEventListener('click',e=>{
   else if(d.deluser)deleteUser(d.deluser);
 });
 ['f-date','f-ho','f-desk'].forEach(id=>$(id).addEventListener('change',renderForm));
+$('f-date').addEventListener('change',()=>{if(isWeekend($('f-date').value)){alert(WE_MSG);$('f-date').value=nextWeekday();renderForm();}});
 $('p-date').addEventListener('change',renderPlan);
 
-$('f-date').value=today();
+$('f-date').value=nextWeekday();
 $('p-date').value=today();
 </script>
 </body>
