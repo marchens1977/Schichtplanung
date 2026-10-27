@@ -73,7 +73,6 @@
                 </div>
             </header>
 
-            <!-- Admin-Hauptbereich mit Reitern -->
             <div id="adminPanelWrapper" class="hidden space-y-6">
                 <div class="bg-amber-600 text-white p-4 rounded-xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div class="flex items-center gap-2">
@@ -86,7 +85,6 @@
                     </div>
                 </div>
 
-                <!-- Reiter 1: Tages- und Gesamtplan -->
                 <div id="adminTabOverview" class="space-y-6">
                     <div class="bg-white p-6 rounded-xl shadow-md space-y-4 border border-amber-200">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-3">
@@ -115,7 +113,6 @@
                     </div>
                 </div>
 
-                <!-- Reiter 2: Mitarbeiterverwaltung -->
                 <div id="adminTabUsers" class="space-y-6 hidden">
                     <div class="bg-white p-6 rounded-xl shadow-md space-y-6 border border-amber-200">
                         <h2 class="text-lg sm:text-xl font-semibold text-amber-800">Mitarbeiter & Schichtzuweisung</h2>
@@ -136,7 +133,6 @@
                                     <div>
                                         <label class="block text-[10px] font-semibold text-slate-600 mb-1">Mitarbeiter</label>
                                         <select id="adminDirectAssignUser" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
-                                            <option value="">Mitarbeiter wählen</option>
                                         </select>
                                     </div>
                                     <div>
@@ -146,26 +142,16 @@
                                     <div>
                                         <label class="block text-[10px] font-semibold text-slate-600 mb-1">Startuhrzeit</label>
                                         <select id="adminDirectAssignStart" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
-                                            <option value="">Uhrzeit wählen</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-[10px] font-semibold text-slate-600 mb-1">Pausenzeit</label>
                                         <select id="adminDirectAssignBreak" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
-                                            <option value="">Pause wählen</option>
-                                            <option value="0 Minuten">0 Minuten</option>
-                                            <option value="15 Minuten">15 Minuten</option>
-                                            <option value="30 Minuten">30 Minuten</option>
-                                            <option value="45 Minuten">45 Minuten</option>
-                                            <option value="60 Minuten">60 Minuten</option>
-                                            <option value="75 Minuten">75 Minuten</option>
-                                            <option value="90 Minuten">90 Minuten</option>
                                         </select>
                                     </div>
                                     <div id="adminDirectAssignDeskWrapper" class="hidden">
                                         <label class="block text-[10px] font-semibold text-slate-600 mb-1">Platz (optional)</label>
                                         <select id="adminDirectAssignDesk" class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
-                                            <option value="">Kein Platz</option>
                                         </select>
                                     </div>
                                     <div class="flex items-center gap-2 pt-1">
@@ -232,7 +218,6 @@
                     </div>
                 </div>
 
-                <!-- Reiter 3: Einstellungen & Raumplan -->
                 <div id="adminTabSettings" class="space-y-6 hidden">
                     <div class="bg-white p-6 rounded-xl shadow-md space-y-4 border border-amber-200">
                         <h2 class="text-lg sm:text-xl font-semibold text-amber-800">System- & Raumplaneinstellungen</h2>
@@ -250,7 +235,6 @@
                 </div>
             </div>
 
-            <!-- Admin-Modal zum Verschieben / Ändern -->
             <div id="adminMoveModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
                 <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-amber-300">
                     <h3 class="text-lg font-bold text-amber-900">Schicht bearbeiten</h3>
@@ -284,14 +268,6 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Pausenzeit:</label>
                             <select id="modalNewBreak" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                                <option value="">Pause wählen</option>
-                                <option value="0 Minuten">0 Minuten</option>
-                                <option value="15 Minuten">15 Minuten</option>
-                                <option value="30 Minuten">30 Minuten</option>
-                                <option value="45 Minuten">45 Minuten</option>
-                                <option value="60 Minuten">60 Minuten</option>
-                                <option value="75 Minuten">75 Minuten</option>
-                                <option value="90 Minuten">90 Minuten</option>
                             </select>
                         </div>
 
@@ -303,7 +279,6 @@
                 </div>
             </div>
 
-            <!-- Admin-Modal für belegte Plätze -->
             <div id="adminPlanDragModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
                 <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-amber-300">
                     <h3 class="text-base font-bold text-amber-900">Mitarbeiter umsetzen oder löschen</h3>
@@ -324,7 +299,6 @@
                 </div>
             </div>
 
-            <!-- Admin-Modal für freie Plätze -->
             <div id="adminAssignModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
                 <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-amber-300">
                     <h3 class="text-base font-bold text-amber-900">Mitarbeiter auf Platz zuweisen</h3>
@@ -343,14 +317,6 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Pausenzeit:</label>
                             <select id="assignBreakTime" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                                <option value="">Pause wählen</option>
-                                <option value="0 Minuten">0 Minuten</option>
-                                <option value="15 Minuten">15 Minuten</option>
-                                <option value="30 Minuten">30 Minuten</option>
-                                <option value="45 Minuten">45 Minuten</option>
-                                <option value="60 Minuten">60 Minuten</option>
-                                <option value="75 Minuten">75 Minuten</option>
-                                <option value="90 Minuten">90 Minuten</option>
                             </select>
                         </div>
                         <div class="flex justify-end gap-2 pt-2 border-t">
@@ -361,7 +327,6 @@
                 </div>
             </div>
 
-            <!-- Modal für Benutzer zum Ändern ihrer eigenen Schicht -->
             <div id="userEditBookingModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
                 <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-blue-200">
                     <h3 class="text-lg font-bold text-blue-900">Schicht bearbeiten</h3>
@@ -393,14 +358,6 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-1">Pausenzeit:</label>
                             <select id="userEditBreakSelect" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Pause wählen</option>
-                                <option value="0 Minuten">0 Minuten</option>
-                                <option value="15 Minuten">15 Minuten</option>
-                                <option value="30 Minuten">30 Minuten</option>
-                                <option value="45 Minuten">45 Minuten</option>
-                                <option value="60 Minuten">60 Minuten</option>
-                                <option value="75 Minuten">75 Minuten</option>
-                                <option value="90 Minuten">90 Minuten</option>
                             </select>
                         </div>
 
@@ -436,10 +393,8 @@
                 </form>
             </div>
 
-            <!-- Hauptansicht für normale User mit 3 Sektoren -->
             <div id="userHomeView" class="space-y-6">
                 
-                <!-- Sektor 1: Eigene Schicht eintragen -->
                 <div class="bg-white p-6 rounded-xl shadow-md space-y-4">
                     <h2 class="text-xl font-bold text-slate-800 border-b pb-3">1. Eigene Schicht eintragen</h2>
                     <form id="bookingForm" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
@@ -454,20 +409,11 @@
                         <div>
                             <label class="block text-xs sm:text-sm font-medium mb-1">Schicht ab Uhrzeit <span class="text-red-500">*</span></label>
                             <select id="startTime" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
-                                <option value="">Uhrzeit wählen</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs sm:text-sm font-medium mb-1">Pausenzeit <span class="text-red-500">*</span></label>
                             <select id="breakTime" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
-                                <option value="">Pause wählen</option>
-                                <option value="0 Minuten">0 Minuten</option>
-                                <option value="15 Minuten">15 Minuten</option>
-                                <option value="30 Minuten">30 Minuten</option>
-                                <option value="45 Minuten">45 Minuten</option>
-                                <option value="60 Minuten">60 Minuten</option>
-                                <option value="75 Minuten">75 Minuten</option>
-                                <option value="90 Minuten">90 Minuten</option>
                             </select>
                         </div>
                         <div>
@@ -481,7 +427,6 @@
                         </div>
                     </form>
 
-                    <!-- Optionaler Raumplan, falls vom Admin aktiviert -->
                     <div id="roomPlanCard" class="space-y-4 pt-4 border-t hidden">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                             <div>
@@ -529,7 +474,6 @@
                     </div>
                 </div>
 
-                <!-- Sektor 2: Übersicht der eigenen Schichten -->
                 <div class="bg-white p-6 rounded-xl shadow-md space-y-4">
                     <h2 class="text-xl font-bold text-slate-800 border-b pb-3">2. Übersicht der eigenen Schichten</h2>
                     <div class="overflow-x-auto">
@@ -549,7 +493,6 @@
                     </div>
                 </div>
 
-                <!-- Sektor 3: Tagesschichtplan insgesamt -->
                 <div class="bg-white p-6 rounded-xl shadow-md space-y-4">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-3">
                         <h2 class="text-xl font-bold text-slate-800" id="userDailyPlanTitle">3. Tagesschichtplan insgesamt</h2>
@@ -708,6 +651,32 @@
         const profilePasswordInput = document.getElementById('profilePassword');
         const deleteAccountBtn = document.getElementById('deleteAccountBtn');
 
+        function populateSelects() {
+            const timeOptionsHtml = '<option value="">Uhrzeit wählen</option>' + 
+                Array.from({length: 13}, (_, i) => {
+                    const m = (i % 2 === 0) ? '00' : '30';
+                    const h = 11 + Math.floor(i / 2);
+                    const timeStr = `${String(h).padStart(2, '0')}:${m}`;
+                    return `<option value="${timeStr}">${timeStr} Uhr</option>`;
+                }).join('');
+
+            const breakOptionsHtml = '<option value="">Pause wählen</option>' + 
+                [0, 15, 30, 45, 60, 75, 90].map(m => `<option value="${m} Minuten">${m} Minuten</option>`).join('');
+
+            const startSelects = ['adminDirectAssignStart', 'modalNewStart', 'assignStartTime', 'userEditStartSelect', 'startTime'];
+            const breakSelects = ['adminDirectAssignBreak', 'modalNewBreak', 'assignBreakTime', 'userEditBreakSelect', 'breakTime'];
+
+            startSelects.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = timeOptionsHtml;
+            });
+
+            breakSelects.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = breakOptionsHtml;
+            });
+        }
+
         function formatDateDE(dateStr) {
             if (!dateStr) return '';
             const parts = dateStr.split('-');
@@ -731,7 +700,6 @@
             const targetDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
             targetDate.setHours(0, 0, 0, 0);
 
-            // Stichtag ist der Vortag um 14:00 Uhr
             const deadline = new Date(targetDate);
             deadline.setDate(deadline.getDate() - 1);
             deadline.setHours(14, 0, 0, 0);
@@ -1013,30 +981,26 @@
 
         function populateAdminDirectAssignUserSelect() {
             if (!adminDirectAssignUser) return;
-            adminDirectAssignUser.innerHTML = '<option value="">Mitarbeiter wählen</option>';
+            
+            let userOptions = '<option value="">Mitarbeiter wählen</option>';
             users.forEach(u => {
-                adminDirectAssignUser.innerHTML += `<option value="${u.username}">${u.username}</option>`;
+                userOptions += `<option value="${u.username}">${u.username}</option>`;
             });
+            adminDirectAssignUser.innerHTML = userOptions;
 
             if (adminDirectAssignDesk) {
-                adminDirectAssignDesk.innerHTML = '<option value="">Kein Platz</option>';
+                let deskOptions = '<option value="">Kein Platz</option>';
                 desks.forEach(d => {
-                    adminDirectAssignDesk.innerHTML += `<option value="${d.id}">Platz ${d.id}</option>`;
+                    deskOptions += `<option value="${d.id}">Platz ${d.id}</option>`;
                 });
+                adminDirectAssignDesk.innerHTML = deskOptions;
             }
 
             const today = new Date().toISOString().split('T')[0];
             if (adminDirectAssignDate && !adminDirectAssignDate.value) adminDirectAssignDate.value = today;
-
-            if (adminDirectAssignStart && adminDirectAssignStart.children.length <= 1) {
-                adminDirectAssignStart.innerHTML = '<option value="">Uhrzeit wählen</option>';
-                for (let h = 11; h <= 17; h++) {
-                    for (let m = 0; m < 60; m += 30) {
-                        const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-                        adminDirectAssignStart.innerHTML += `<option value="${timeStr}">${timeStr} Uhr</option>`;
-                    }
-                }
-            }
+            
+            if (adminDirectAssignStart) adminDirectAssignStart.value = '';
+            if (adminDirectAssignBreak) adminDirectAssignBreak.value = '';
         }
 
         adminDirectAssignForm.onsubmit = async (e) => {
@@ -1175,6 +1139,8 @@
                 adminUserBookingsTableBody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-slate-400">Keine Schichten vorhanden.</td></tr>';
             } else {
                 userBookings.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+                const fragment = document.createDocumentFragment();
+                
                 userBookings.forEach(b => {
                     const globalIndex = bookings.indexOf(b);
                     const tr = document.createElement('tr');
@@ -1192,8 +1158,9 @@
                             <button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2 py-1 rounded border border-red-200">Löschen</button>
                         </td>
                     `;
-                    adminUserBookingsTableBody.appendChild(tr);
+                    fragment.appendChild(tr);
                 });
+                adminUserBookingsTableBody.appendChild(fragment);
             }
 
             adminUserBookingsContainer.classList.remove('hidden');
@@ -1212,24 +1179,19 @@
             modalNewDate.value = booking.date;
             modalFormattedDatePreview.textContent = formatDateDE(booking.date);
             modalNewHO.checked = !!booking.isHO;
+            
+            modalNewStart.value = booking.start;
             modalNewBreak.value = booking.breakTime || '0 Minuten';
 
             if (settings.deskBookingEnabled) {
                 modalDeskGroup.classList.remove('hidden');
-                modalNewDesk.innerHTML = '<option value="">Kein Platz (optional)</option>';
+                let deskOptions = '<option value="">Kein Platz (optional)</option>';
                 desks.forEach(d => {
-                    modalNewDesk.innerHTML += `<option value="${d.id}" ${d.id === booking.desk ? 'selected' : ''}>Platz ${d.id}</option>`;
+                    deskOptions += `<option value="${d.id}" ${d.id === booking.desk ? 'selected' : ''}>Platz ${d.id}</option>`;
                 });
+                modalNewDesk.innerHTML = deskOptions;
             } else {
                 modalDeskGroup.classList.add('hidden');
-            }
-
-            modalNewStart.innerHTML = '';
-            for (let h = 11; h <= 17; h++) {
-                for (let m = 0; m < 60; m += 30) {
-                    const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-                    modalNewStart.innerHTML += `<option value="${timeStr}" ${timeStr === booking.start ? 'selected' : ''}>${timeStr} Uhr</option>`;
-                }
             }
 
             adminMoveModal.classList.remove('hidden');
@@ -1307,13 +1269,14 @@
             planDragEmployee.textContent = booking.name;
             planDragOldDesk.textContent = booking.desk;
 
-            planDragTargetDesk.innerHTML = '<option value="">Kein Platz (Platz freigeben)</option>';
+            let deskOptions = '<option value="">Kein Platz (Platz freigeben)</option>';
             desks.forEach(d => {
                 const isOccupied = bookings.some(b => b.date === currentDate && b.desk === d.id);
                 if (!isOccupied || d.id === booking.desk) {
-                    planDragTargetDesk.innerHTML += `<option value="${d.id}" ${d.id === booking.desk ? 'selected' : ''}>Platz ${d.id} ${d.id === booking.desk ? '(aktuell)' : '(frei)'}</option>`;
+                    deskOptions += `<option value="${d.id}" ${d.id === booking.desk ? 'selected' : ''}>Platz ${d.id} ${d.id === booking.desk ? '(aktuell)' : '(frei)'}</option>`;
                 }
             });
+            planDragTargetDesk.innerHTML = deskOptions;
 
             adminPlanDragModal.classList.remove('hidden');
         }
@@ -1358,21 +1321,17 @@
             currentAdminAssignDesk = deskId;
             assignTargetDeskDisplay.textContent = `Platz ${deskId} am ${formatDateDE(currentDate)}`;
 
-            assignEmployeeSelect.innerHTML = '<option value="">Mitarbeiter wählen</option>';
+            let userOptions = '<option value="">Mitarbeiter wählen</option>';
             users.forEach(u => {
                 const alreadyBooked = bookings.some(b => b.name.toLowerCase() === u.username.toLowerCase() && b.date === currentDate);
                 if (!alreadyBooked) {
-                    assignEmployeeSelect.innerHTML += `<option value="${u.username}">${u.username}</option>`;
+                    userOptions += `<option value="${u.username}">${u.username}</option>`;
                 }
             });
+            assignEmployeeSelect.innerHTML = userOptions;
 
-            assignStartTime.innerHTML = '';
-            for (let h = 11; h <= 17; h++) {
-                for (let m = 0; m < 60; m += 30) {
-                    const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-                    assignStartTime.innerHTML += `<option value="${timeStr}">${timeStr} Uhr</option>`;
-                }
-            }
+            assignStartTime.value = '';
+            assignBreakTime.value = '';
 
             adminAssignModal.classList.remove('hidden');
         }
@@ -1431,27 +1390,22 @@
             userEditBookingIndex.value = globalIndex;
             userEditDateInput.value = booking.date;
             userEditHO.checked = !!booking.isHO;
+            
+            userEditStartSelect.value = booking.start;
             userEditBreakSelect.value = booking.breakTime || '0 Minuten';
 
             if (settings.deskBookingEnabled) {
                 userEditDeskGroup.classList.remove('hidden');
-                userEditDeskSelect.innerHTML = '<option value="">Kein Platz (optional)</option>';
+                let deskOptions = '<option value="">Kein Platz (optional)</option>';
                 desks.forEach(d => {
                     const isOccupied = bookings.some((b, idx) => idx !== globalIndex && b.date === booking.date && b.desk === d.id);
                     if (!isOccupied || d.id === booking.desk) {
-                        userEditDeskSelect.innerHTML += `<option value="${d.id}" ${d.id === booking.desk ? 'selected' : ''}>Platz ${d.id} ${d.id === booking.desk ? '(aktuell)' : '(frei)'}</option>`;
+                        deskOptions += `<option value="${d.id}" ${d.id === booking.desk ? 'selected' : ''}>Platz ${d.id} ${d.id === booking.desk ? '(aktuell)' : '(frei)'}</option>`;
                     }
                 });
+                userEditDeskSelect.innerHTML = deskOptions;
             } else {
                 userEditDeskGroup.classList.add('hidden');
-            }
-
-            userEditStartSelect.innerHTML = '';
-            for (let h = 11; h <= 17; h++) {
-                for (let m = 0; m < 60; m += 30) {
-                    const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-                    userEditStartSelect.innerHTML += `<option value="${timeStr}" ${timeStr === booking.start ? 'selected' : ''}>${timeStr} Uhr</option>`;
-                }
             }
 
             userEditBookingModal.classList.remove('hidden');
@@ -1528,6 +1482,7 @@
                 return;
             }
 
+            const fragment = document.createDocumentFragment();
             users.forEach((u) => {
                 const tr = document.createElement('tr');
                 tr.className = 'border-b hover:bg-slate-50';
@@ -1541,8 +1496,9 @@
                         <button type="button" onclick="adminDeleteUser('${u.username}')" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2 py-1 rounded border border-red-200">Löschen</button>
                     </td>
                 `;
-                adminUsersTableBody.appendChild(tr);
+                fragment.appendChild(tr);
             });
+            adminUsersTableBody.appendChild(fragment);
         }
 
         authForm.onsubmit = async (e) => {
@@ -1638,19 +1594,6 @@
                 if (deskDisplay) deskDisplay.value = '';
                 if (settings.deskBookingEnabled) renderRoomPlan();
             };
-        }
-
-        function populateTimeSelects() {
-            const startSelect = document.getElementById('startTime');
-            if (!startSelect) return;
-            startSelect.innerHTML = '<option value="">Uhrzeit wählen</option>';
-
-            for (let h = 11; h <= 17; h++) {
-                for (let m = 0; m < 60; m += 30) {
-                    const timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-                    startSelect.innerHTML += `<option value="${timeStr}">${timeStr} Uhr</option>`;
-                }
-            }
         }
 
         function getBookingForDesk(deskId, date) {
@@ -1754,6 +1697,7 @@
             }
 
             dayBookings.sort((a, b) => a.start.localeCompare(b.start));
+            const fragment = document.createDocumentFragment();
 
             dayBookings.forEach(b => {
                 const globalIndex = bookings.indexOf(b);
@@ -1772,8 +1716,9 @@
                         <button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2 py-1 rounded border border-red-200">Löschen</button>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                fragment.appendChild(tr);
             });
+            tbody.appendChild(fragment);
         }
 
         function renderMyBookings() {
@@ -1789,6 +1734,7 @@
             }
 
             myBookings.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
+            const fragment = document.createDocumentFragment();
 
             myBookings.forEach((b) => {
                 const globalIndex = bookings.indexOf(b);
@@ -1807,8 +1753,9 @@
                         <button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2.5 py-1 rounded border border-red-200">Löschen</button>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                fragment.appendChild(tr);
             });
+            tbody.appendChild(fragment);
         }
 
         function renderBookings() {
@@ -1828,6 +1775,7 @@
             }
 
             filteredBookings.sort((a, b) => a.start.localeCompare(b.start));
+            const fragment = document.createDocumentFragment();
 
             filteredBookings.forEach((b) => {
                 const globalIndex = bookings.indexOf(b);
@@ -1846,8 +1794,9 @@
                         ${(b.name === currentUser || isAdmin) ? `<button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs">Löschen</button>` : '<span class="text-slate-300 font-medium text-xs">-</span>'}
                     </td>
                 `;
-                tbody.appendChild(tr);
+                fragment.appendChild(tr);
             });
+            tbody.appendChild(fragment);
         }
 
         async function confirmAndDeleteBooking(index) {
@@ -1941,7 +1890,7 @@
         adminDateSelect.value = today;
         userViewDateSelect.value = today;
 
-        populateTimeSelects();
+        populateSelects();
         setupCloudSync();
     </script>
 </body>
