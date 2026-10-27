@@ -68,7 +68,7 @@
                 </div>
                 <div class="flex items-center gap-2 sm:gap-3 bg-white px-4 py-2 rounded-lg shadow-sm">
                     <span class="text-xs sm:text-sm font-medium text-slate-700">Angemeldet: <span id="currentUserDisplay" class="text-blue-600 font-bold"></span></span>
-                    <button type="button" id="openProfileBtn" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-md transition-colors font-medium">Profil</button>
+                    <button type="button" id="openProfileBtn" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-md transition-colors font-medium hidden">Profil</button>
                     <button type="button" id="logoutBtn" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-md transition-colors font-medium">Abmelden</button>
                 </div>
             </header>
@@ -369,26 +369,6 @@
                 </div>
             </div>
 
-            <div id="profileSection" class="bg-white p-6 rounded-xl shadow-md border border-blue-100 hidden space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
-                    <h2 class="text-lg font-bold text-slate-800">Mein Profil</h2>
-                    <button type="button" id="closeProfileBtn" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
-                </div>
-                <form id="profileForm" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Benutzername ändern</label>
-                        <input type="text" id="profileUsername" required class="w-full p-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="flex justify-between items-center mt-2 pt-3 border-t">
-                        <button type="button" id="deleteAccountBtn" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg transition-colors">Profil dauerhaft löschen</button>
-                        <div class="flex gap-2">
-                            <button type="button" id="cancelProfileBtn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg">Abbrechen</button>
-                            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg">Änderungen speichern</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
             <div id="userHomeView" class="space-y-6">
                 
                 <div class="bg-white p-6 rounded-xl shadow-md space-y-4">
@@ -639,12 +619,6 @@
         const eyeIcon = document.getElementById('eyeIcon');
 
         const openProfileBtn = document.getElementById('openProfileBtn');
-        const profileSection = document.getElementById('profileSection');
-        const closeProfileBtn = document.getElementById('closeProfileBtn');
-        const cancelProfileBtn = document.getElementById('cancelProfileBtn');
-        const profileForm = document.getElementById('profileForm');
-        const profileUsernameInput = document.getElementById('profileUsername');
-        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
 
         function escapeHTML(value) {
             return String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -915,72 +889,12 @@
         adminTabUsersBtn.onclick = () => switchAdminTab('users');
         adminTabSettingsBtn.onclick = () => switchAdminTab('settings');
 
-        openProfileBtn.onclick = () => {
-            profileUsernameInput.value = currentUser;
-            profileSection.classList.remove('hidden');
-        };
-
-        closeProfileBtn.onclick = () => profileSection.classList.add('hidden');
-        cancelProfileBtn.onclick = () => profileSection.classList.add('hidden');
-
-        profileForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const newUsername = profileUsernameInput.value.trim();
-            if (!isValidUsername(newUsername)) {
-                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten (maximal 40 Zeichen).');
-                return;
-            }
-
-            const userIndex = users.findIndex(u => u.username.toLowerCase() === currentUser.toLowerCase());
-            
-            if (newUsername.toLowerCase() !== currentUser.toLowerCase()) {
-                const nameTaken = users.some(u => u.username.toLowerCase() === newUsername.toLowerCase());
-                if (nameTaken) {
-                    alert('Dieser Benutzername ist bereits vergeben.');
-                    return;
-                }
-            }
-
-            if (userIndex !== -1) {
-                if (newUsername !== currentUser) {
-                    bookings.forEach(b => {
-                        if (b.name === currentUser) b.name = newUsername;
-                    });
-                    await saveCloudData("bookings", bookings);
-                }
-
-                users[userIndex].username = newUsername;
-
-                await saveCloudData("users", users);
-                loginUser(newUsername);
-                profileSection.classList.add('hidden');
-                alert('Benutzername erfolgreich aktualisiert!');
-            }
-        };
-
-        deleteAccountBtn.onclick = async () => {
-            const confirmDelete = confirm("Möchtest du dein Profil wirklich dauerhaft löschen? Dabei werden auch alle deine Schichten entfernt.");
-            if (!confirmDelete) return;
-
-            users = users.filter(u => u.username.toLowerCase() !== currentUser.toLowerCase());
-            await saveCloudData("users", users);
-
-            bookings = bookings.filter(b => b.name !== currentUser);
-            await saveCloudData("bookings", bookings);
-
-            alert("Dein Profil wurde erfolgreich gelöscht.");
-            currentUser = null;
-            localStorage.removeItem('deskCurrentUser');
-            profileSection.classList.add('hidden');
-            checkAuth();
-        };
-
         adminCreateUserForm.onsubmit = async (e) => {
             e.preventDefault();
             const newU = adminNewUsername.value.trim();
             const newP = adminNewPassword.value;
             if (!isValidUsername(newU)) {
-                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten (maximal 40 Zeichen).');
+                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten.');
                 return;
             }
 
@@ -1099,7 +1013,7 @@
             const updatedName = adminEditUsername.value.trim();
             const updatedPass = adminEditPassword.value;
             if (!isValidUsername(updatedName)) {
-                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten (maximal 40 Zeichen).');
+                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten.');
                 return;
             }
 
@@ -1568,7 +1482,6 @@
         logoutBtn.onclick = () => {
             currentUser = null;
             localStorage.removeItem('deskCurrentUser');
-            profileSection.classList.add('hidden');
             adminEditContainer.classList.add('hidden');
             adminUserBookingsContainer.classList.add('hidden');
             currentActiveUserForModal = null;
@@ -1606,7 +1519,6 @@
                 adminPanelWrapper.classList.add('hidden');
                 adminEditContainer.classList.add('hidden');
                 adminUserBookingsContainer.classList.add('hidden');
-                profileSection.classList.add('hidden');
                 currentActiveUserForModal = null;
             }
         }
