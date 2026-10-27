@@ -725,22 +725,23 @@
         function checkLeadTimeValid(dateStr) {
             if (isAdmin) return true;
             if (!dateStr) return false;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
+            
+            const now = new Date();
             const parts = dateStr.split('-');
             const targetDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
             targetDate.setHours(0, 0, 0, 0);
 
-            const diffTime = targetDate.getTime() - today.getTime();
-            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+            // Stichtag ist der Vortag um 14:00 Uhr
+            const deadline = new Date(targetDate);
+            deadline.setDate(deadline.getDate() - 1);
+            deadline.setHours(14, 0, 0, 0);
 
-            return diffDays >= 2;
+            return now <= deadline;
         }
 
         function checkLeadTimeOrAlert(dateStr) {
             if (!checkLeadTimeValid(dateStr)) {
-                alert("Änderungen, Eintragungen und Löschungen können nur mit mindestens einem Tag Vorlaufzeit (also mindestens zwei Tage vor der Schicht) vorgenommen werden. Bitte wenden Sie sich an den Overhead.");
+                alert("Änderungen, Eintragungen und Löschungen sind für diesen Tag nur bis 14:00 Uhr des Vortages möglich.");
                 return false;
             }
             return true;
@@ -1047,6 +1048,8 @@
             const desk = settings.deskBookingEnabled ? adminDirectAssignDesk.value : "";
             const isHO = adminDirectAssignHO.checked;
 
+            if (!checkLeadTimeOrAlert(date)) return;
+
             const dayCount = bookings.filter(b => b.date === date).length;
             if (dayCount >= 16) {
                 alert("Für diesen Tag sind bereits maximal 16 Schichten eingetragen.");
@@ -1202,6 +1205,8 @@
             const booking = bookings[globalIndex];
             if (!booking) return;
 
+            if (!checkLeadTimeOrAlert(booking.date)) return;
+
             modalBookingIndex.value = globalIndex;
             modalEmployeeName.textContent = booking.name;
             modalNewDate.value = booking.date;
@@ -1251,6 +1256,8 @@
             const newBreak = modalNewBreak.value;
             const newHO = modalNewHO.checked;
 
+            if (!checkLeadTimeOrAlert(newDate) || !checkLeadTimeOrAlert(booking.date)) return;
+
             if (newDate !== booking.date) {
                 const dayCount = bookings.filter(b => b.date === newDate).length;
                 if (dayCount >= 16) {
@@ -1293,6 +1300,8 @@
         };
 
         function openPlanDragModal(booking, currentDate) {
+            if (!checkLeadTimeOrAlert(currentDate)) return;
+
             const globalIndex = bookings.indexOf(booking);
             planDragBookingIndex.value = globalIndex;
             planDragEmployee.textContent = booking.name;
@@ -1338,6 +1347,8 @@
         };
 
         function openAdminAssignModal(deskId, currentDate) {
+            if (!checkLeadTimeOrAlert(currentDate)) return;
+
             const dayCount = bookings.filter(b => b.date === currentDate).length;
             if (dayCount >= 16) {
                 alert("Für diesen Tag sind bereits maximal 16 Schichten eingetragen.");
@@ -1376,6 +1387,8 @@
             const startTime = assignStartTime.value;
             const breakTime = assignBreakTime.value;
             const date = document.getElementById('bookingDate').value;
+
+            if (!checkLeadTimeOrAlert(date)) return;
 
             const dayCount = bookings.filter(b => b.date === date).length;
             if (dayCount >= 16) {
