@@ -91,9 +91,10 @@
                     <div class="bg-white p-6 rounded-xl shadow-md space-y-4 border border-amber-200">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-3">
                             <h3 class="text-lg font-bold text-amber-900" id="adminDaySummaryTitle">Schichtplan für das Datum</h3>
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <label for="adminDateSelect" class="text-xs sm:text-sm font-medium text-slate-600">Datum wählen:</label>
                                 <input type="date" id="adminDateSelect" class="p-1.5 border border-slate-300 rounded-lg text-xs sm:text-sm outline-none focus:ring-2 focus:ring-amber-500 font-semibold bg-slate-50">
+                                <button type="button" id="adminExportExcelBtn" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors">Excel-Export</button>
                             </div>
                         </div>
                         <div class="overflow-x-auto">
@@ -512,6 +513,7 @@
         const adminDaySummaryCard = document.getElementById('adminDaySummaryCard');
         const adminDaySummaryTitle = document.getElementById('adminDaySummaryTitle');
         const adminDaySummaryTableBody = document.getElementById('adminDaySummaryTableBody');
+        const adminExportExcelBtn = document.getElementById('adminExportExcelBtn');
 
         const adminTabOverviewBtn = document.getElementById('adminTabOverviewBtn');
         const adminTabUsersBtn = document.getElementById('adminTabUsersBtn');
@@ -729,6 +731,38 @@
                 settings.deskBookingEnabled = adminToggleDeskBooking.checked;
                 await saveSettings(settings);
                 updateDeskBookingVisibility();
+            };
+        }
+
+        if (adminExportExcelBtn) {
+            adminExportExcelBtn.onclick = () => {
+                const selDate = adminDateSelect.value;
+                const dayBookings = bookings.filter(b => b.date === selDate);
+                if (dayBookings.length === 0) {
+                    alert("Für diesen Tag sind keine Schichten vorhanden, die exportiert werden könnten.");
+                    return;
+                }
+
+                dayBookings.sort((a, b) => a.start.localeCompare(b.start));
+
+                let csvContent = "Mitarbeiter;Platz;Uhrzeit;Datum\n";
+                dayBookings.forEach(b => {
+                    const name = b.name || "";
+                    const desk = b.desk || "-";
+                    const start = b.start ? `ab ${b.start} Uhr` : "";
+                    const date = formatDateDE(b.date);
+                    csvContent += `"${name}";"${desk}";"${start}";"${date}"\n`;
+                });
+
+                const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Schichtplan_${selDate}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             };
         }
 
