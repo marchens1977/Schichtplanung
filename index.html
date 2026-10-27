@@ -71,6 +71,7 @@ th,td{@apply p-2 text-left}
       <button class="btn">Anlegen</button>
     </form>
     <div id="ulist"></div>
+    <div id="ushifts"></div>
   </section>
 
   <section id="t-set" class="card hidden">
@@ -95,7 +96,7 @@ const db=getFirestore(initializeApp({
 
 const $=id=>document.getElementById(id);
 const MAX=16, D=Array.from({length:MAX},(_,i)=>'P'+(i+1));
-let me=localStorage.getItem('sp_user'), users=[], shifts=[], settings={desks:false}, editId=null, tab='form';
+let viewUser=null, me=localStorage.getItem('sp_user'), users=[], shifts=[], settings={desks:false}, editId=null, tab='form';
 const ready={u:0,s:0,c:0};
 
 const isAdmin=()=>!!me&&me.toLowerCase()==='admin';
@@ -184,13 +185,13 @@ function renderForm(){
       :`<button type="button" data-desk="${d}" class="rounded border text-xs p-2 ${sel===d?'bg-blue-600 text-white':'bg-white'}">${d}</button>`).join('')+'</div></div>').join('');
 }
 
-function tbl(l,nm,dt){
+function tbl(l,nm,dt,act){
   if(!l.length)return '<p class="text-slate-400 text-center p-3 text-sm">Keine Schichten.</p>';
   const dk=settings.desks;
-  return `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-slate-500 border-b">${nm?'<th>Name</th>':''}${dt?'<th>Datum</th>':''}<th>Typ</th>${dk?'<th>Platz</th>':''}<th>Zeit</th><th>Pause</th><th></th></tr></thead><tbody>`+
+  return `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-slate-500 border-b">${nm?'<th>Name</th>':''}${dt?'<th>Datum</th>':''}<th>Typ</th>${dk?'<th>Platz</th>':''}<th>Zeit</th><th>Pause</th>${act?'<th></th>':''}</tr></thead><tbody>`+
   l.map(s=>{
-    const can=isAdmin()||same(s.name,me);
-    return `<tr class="border-b">${nm?`<td class="font-semibold">${esc(s.name)}</td>`:''}${dt?`<td>${fmt(s.date)}</td>`:''}<td class="font-semibold ${s.isHO?'text-purple-600':''}">${s.isHO?'HO':'Büro'}</td>${dk?`<td>${esc(s.desk||'-')}</td>`:''}<td>ab ${esc(s.start)} Uhr</td><td>${esc(s.breakTime)}</td><td class="whitespace-nowrap">${can?`<button class="btn2" data-edit="${esc(s.id)}">Ändern</button> <button class="btn2 !text-red-600" data-del="${esc(s.id)}">Löschen</button>`:''}</td></tr>`;
+    const can=act&&(isAdmin()||same(s.name,me));
+    return `<tr class="border-b">${nm?`<td class="font-semibold">${esc(s.name)}</td>`:''}${dt?`<td>${fmt(s.date)}</td>`:''}<td class="font-semibold ${s.isHO?'text-purple-600':''}">${s.isHO?'HO':'Büro'}</td>${dk?`<td>${esc(s.desk||'-')}</td>`:''}<td>ab ${esc(s.start)} Uhr</td><td>${esc(s.breakTime)}</td>${act?`<td class="whitespace-nowrap">${can?`<button class="btn2" data-edit="${esc(s.id)}">Ändern</button> <button class="btn2 !text-red-600" data-del="${esc(s.id)}">Löschen</button>`:''}</td>`:''}</tr>`;
   }).join('')+'</tbody></table></div>';
 }
 
@@ -198,19 +199,21 @@ function renderPlan(){
   const d=$('p-date').value, l=shifts.filter(s=>s.date===d).sort((a,b)=>a.start.localeCompare(b.start));
   const o=l.filter(s=>!s.isHO).length;
   $('p-head').textContent=`${fmt(d)}: Büro ${o}/${MAX}, Homeoffice ${l.length-o}`;
-  $('plan-tbl').innerHTML=tbl(l,true,false);
+  $('plan-tbl').innerHTML=tbl(l,true,false,isAdmin());
   $('csv').classList.toggle('hidden',!isAdmin());
 }
 
 function renderMine(){
   if(!me)return;
-  $('mine').innerHTML=tbl(shifts.filter(s=>same(s.name,me)).sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start)),false,true);
+  $('mine').innerHTML=tbl(shifts.filter(s=>same(s.name,me)).sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start)),false,true,true);
 }
 
 function renderUsers(){
   if(!isAdmin())return;
   const l=users.filter(u=>!same(u.username,'admin'));
-  $('ulist').innerHTML=l.length?'<table class="w-full text-sm"><tbody>'+l.map(u=>`<tr class="border-b"><td class="font-semibold">${esc(u.username)}</td><td class="text-right whitespace-nowrap"><button class="btn2" data-pw="${esc(u.username)}">Passwort ändern</button> <button class="btn2 !text-red-600" data-deluser="${esc(u.username)}">Löschen</button></td></tr>`).join('')+'</tbody></table>':'<p class="text-slate-400 text-sm">Noch keine Mitarbeiter angelegt.</p>';
+  $('ulist').innerHTML=l.length?'<table class="w-full text-sm"><tbody>'+l.map(u=>`<tr class="border-b"><td class="font-semibold">${esc(u.username)}</td><td class="text-right whitespace-nowrap"><button class="btn2" data-shifts="${esc(u.username)}">Schichten</button> <button class="btn2" data-pw="${esc(u.username)}">Passwort ändern</button> <button class="btn2 !text-red-600" data-deluser="${esc(u.username)}">Löschen</button></td></tr>`).join('')+'</tbody></table>':'<p class="text-slate-400 text-sm">Noch keine Mitarbeiter angelegt.</p>';
+  if(viewUser&&!users.some(u=>same(u.username,viewUser)))viewUser=null;
+  $('ushifts').innerHTML=viewUser?`<div class="flex justify-between items-center pt-3 border-t"><h3 class="font-bold">Schichten von ${esc(viewUser)}</h3><button class="btn2" data-closeshifts="1">Schließen</button></div>`+tbl(shifts.filter(s=>same(s.name,viewUser)).sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start)),false,true,true):'';
 }
 
 // Schicht speichern: ein Dokument pro Schicht (Mitarbeiter + Tag), ein Sperr-Dokument pro Platz + Tag
@@ -247,7 +250,7 @@ $('form').onsubmit=async e=>{
     return alert(`Alle ${MAX} Büroplätze sind an diesem Tag vergeben. Homeoffice ist weiterhin möglich.`);
   if(!await run(()=>saveShift(sh,old)))return;
   if(isAdmin())$('p-date').value=date;
-  tab=isAdmin()?'plan':'mine';
+  tab=isAdmin()?(viewUser?'users':'plan'):'mine';
   resetForm();render();
 };
 
@@ -325,12 +328,14 @@ $('csv').onclick=()=>{
 
 // Klicks (ein zentraler Handler, keine Namen in onclick-Attributen)
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-tab],[data-desk],[data-edit],[data-del],[data-pw],[data-deluser]'); if(!t)return;
+  const t=e.target.closest('[data-tab],[data-desk],[data-edit],[data-del],[data-pw],[data-deluser],[data-shifts],[data-closeshifts]'); if(!t)return;
   const d=t.dataset;
   if(d.tab){tab=d.tab;tabs();}
   else if(d.desk){$('f-desk').value=d.desk;renderForm();}
   else if(d.edit)startEdit(d.edit);
   else if(d.del)removeShift(d.del);
+  else if(d.shifts){viewUser=d.shifts;renderUsers();}
+  else if(d.closeshifts){viewUser=null;renderUsers();}
   else if(d.pw)changePw(d.pw);
   else if(d.deluser)deleteUser(d.deluser);
 });
