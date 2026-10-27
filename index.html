@@ -526,6 +526,8 @@
     </div>
 
     <script>
+        // ACHTUNG: Diese bestehende Anmeldelogik ist nur ein Übergang für den bisherigen Prototyp.
+        // localStorage und ein im Quellcode stehendes Admin-Passwort sind keine sichere Anmeldung.
         let currentUser = localStorage.getItem('deskCurrentUser') || null;
         let isAdmin = false;
         let users = [];
@@ -651,6 +653,12 @@
         const profilePasswordInput = document.getElementById('profilePassword');
         const deleteAccountBtn = document.getElementById('deleteAccountBtn');
 
+        function escapeHTML(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[char]));
+        }
+
         function populateSelects() {
             const timeOptionsHtml = '<option value="">Uhrzeit wählen</option>' + 
                 Array.from({length: 13}, (_, i) => {
@@ -675,6 +683,21 @@
                 const el = document.getElementById(id);
                 if (el) el.innerHTML = breakOptionsHtml;
             });
+        }
+
+        // Liefert das lokale Datum als YYYY-MM-DD (vermeidet UTC-Verschiebungen).
+        function getLocalDateISO(date = new Date()) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // CSV-Felder korrekt maskieren und Tabellenkalkulations-Formeln entschärfen.
+        function csvEscape(value) {
+            let text = String(value ?? '');
+            if (/^[\s]*[=+\-@]/.test(text)) text = "'" + text;
+            return `"${text.replace(/"/g, '""')}"`;
         }
 
         function formatDateDE(dateStr) {
@@ -776,22 +799,32 @@
         }
 
         async function saveCloudData(key, dataList) {
-            if (window.db) {
-                try {
-                    await window.setDoc(window.doc(window.db, "app", key), { list: dataList });
-                } catch (e) {
-                    console.error("Cloud Error", e);
-                }
+            if (!window.db) {
+                alert('Keine Verbindung zur Datenbank. Bitte prüfe deine Internetverbindung und lade die Seite neu.');
+                return false;
+            }
+            try {
+                await window.setDoc(window.doc(window.db, "app", key), { list: dataList });
+                return true;
+            } catch (e) {
+                console.error("Cloud Error", e);
+                alert('Die Daten konnten nicht gespeichert werden. Bitte versuche es erneut. Wenn der Fehler bleibt, muss die Firebase-Konfiguration bzw. die Datenbankberechtigung geprüft werden.');
+                return false;
             }
         }
 
         async function saveSettings(newSettings) {
-            if (window.db) {
-                try {
-                    await window.setDoc(window.doc(window.db, "app", "settings"), newSettings);
-                } catch (e) {
-                    console.error("Settings Error", e);
-                }
+            if (!window.db) {
+                alert('Keine Verbindung zur Datenbank. Bitte prüfe deine Internetverbindung und lade die Seite neu.');
+                return false;
+            }
+            try {
+                await window.setDoc(window.doc(window.db, "app", "settings"), newSettings);
+                return true;
+            } catch (e) {
+                console.error("Settings Error", e);
+                alert('Die Einstellungen konnten nicht gespeichert werden. Bitte prüfe die Firebase-Berechtigungen.');
+                return false;
             }
         }
 
@@ -822,7 +855,7 @@
                     const start = b.start ? `ab ${b.start} Uhr` : "";
                     const breakTime = b.breakTime || "0 Minuten";
                     const date = formatDateDE(b.date);
-                    csvContent += `"${name}";"${desk}";"${type}";"${start}";"${breakTime}";"${date}"\n`;
+                    csvContent += [name, desk, type, start, breakTime, date].map(csvEscape).join(';') + '\n';
                 });
 
                 const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -905,6 +938,10 @@
             e.preventDefault();
             const newUsername = profileUsernameInput.value.trim();
             const newPassword = profilePasswordInput.value;
+            if (!isValidUsername(newUsername)) {
+                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten (maximal 40 Zeichen).');
+                return;
+            }
 
             const userIndex = users.findIndex(u => u.username.toLowerCase() === currentUser.toLowerCase());
             
@@ -957,6 +994,14 @@
             e.preventDefault();
             const newU = adminNewUsername.value.trim();
             const newP = adminNewPassword.value;
+            if (!isValidUsername(newU)) {
+                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten (maximal 40 Zeichen).');
+                return;
+            }
+            if (newP.length < 8) {
+                alert('Bitte verwende ein Passwort mit mindestens 8 Zeichen.');
+                return;
+            }
 
             if (newU.toLowerCase() === 'admin') {
                 alert('Der Benutzername "admin" ist bereits reserviert.');
@@ -996,7 +1041,7 @@
                 adminDirectAssignDesk.innerHTML = deskOptions;
             }
 
-            const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateISO();
             if (adminDirectAssignDate && !adminDirectAssignDate.value) adminDirectAssignDate.value = today;
             
             if (adminDirectAssignStart) adminDirectAssignStart.value = '';
@@ -1072,6 +1117,14 @@
             const origName = adminEditOriginalUsername.value;
             const updatedName = adminEditUsername.value.trim();
             const updatedPass = adminEditPassword.value;
+            if (!isValidUsername(updatedName)) {
+                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten (maximal 40 Zeichen).');
+                return;
+            }
+            if (updatedPass && updatedPass.length < 8) {
+                alert('Ein neues Passwort muss mindestens 8 Zeichen lang sein.');
+                return;
+            }
 
             const userIndex = users.findIndex(u => u.username.toLowerCase() === origName.toLowerCase());
             if (userIndex === -1) return;
@@ -1488,7 +1541,7 @@
                 tr.className = 'border-b hover:bg-slate-50';
                 tr.innerHTML = `
                     <td class="p-2 sm:p-3 font-semibold text-slate-750">
-                        <button type="button" onclick="adminViewUserBookings('${u.username}')" class="text-blue-600 hover:underline font-bold text-left" title="Schichten anzeigen">${u.username}</button>
+                        <button type="button" onclick="adminViewUserBookings('${u.username}')" class="text-blue-600 hover:underline font-bold text-left" title="Schichten anzeigen">${escapeHTML(u.username)}</button>
                     </td>
                     <td class="p-2 sm:p-3 flex gap-2">
                         <button type="button" onclick="adminViewUserBookings('${u.username}')" class="text-amber-700 hover:text-amber-900 font-medium text-xs bg-amber-50 px-2 py-1 rounded border border-amber-200">Schichten</button>
@@ -1501,10 +1554,19 @@
             adminUsersTableBody.appendChild(fragment);
         }
 
+        // Für neue Konten sind nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich erlaubt.
+        function isValidUsername(username) {
+            return /^[\p{L}\p{N}._-]{1,40}$/u.test(String(username || '').trim());
+        }
+
         authForm.onsubmit = async (e) => {
             e.preventDefault();
             const username = document.getElementById('authUsername').value.trim();
             const password = authPasswordInput.value;
+            if (!isValidUsername(username)) {
+                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten (maximal 40 Zeichen).');
+                return;
+            }
 
             if (username.toLowerCase() === 'admin' && password === 'admin123') {
                 loginUser('Admin');
@@ -1800,8 +1862,20 @@
         }
 
         async function confirmAndDeleteBooking(index) {
+            // Zusätzliche UI-Prüfung; echte Sicherheit muss durch Firestore Rules erfolgen.
+            if (!currentUser) {
+                alert('Bitte melde dich zuerst an.');
+                return;
+            }
             const booking = bookings[index];
-            if (!booking) return;
+            if (!booking) {
+                alert('Diese Schicht wurde nicht gefunden. Bitte lade die Seite neu.');
+                return;
+            }
+            if (!isAdmin && String(booking.name || '').toLowerCase() !== String(currentUser).toLowerCase()) {
+                alert('Du darfst nur deine eigenen Schichten löschen.');
+                return;
+            }
 
             if (!checkLeadTimeOrAlert(booking.date)) return;
 
@@ -1885,7 +1959,7 @@
             };
         }
 
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLocalDateISO();
         if (bookingDateInput) bookingDateInput.value = today;
         adminDateSelect.value = today;
         userViewDateSelect.value = today;
