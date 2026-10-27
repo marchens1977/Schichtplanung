@@ -1,1899 +1,344 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schichtplanung - Cloud Live</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyD_1D3R8gywh07q-FZ55HL9lcxNgtd5FJM",
-            authDomain: "arbeitsplatzbuchung-a0f93.firebaseapp.com",
-            projectId: "arbeitsplatzbuchung-a0f93",
-            storageBucket: "arbeitsplatzbuchung-a0f93.firebasestorage.app",
-            messagingSenderId: "527612842869",
-            appId: "1:527612842869:web:fc5559629841724321b93c",
-            measurementId: "G-2Z7CJKMWEJ"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        window.db = db;
-        window.doc = doc;
-        window.getDoc = getDoc;
-        window.setDoc = setDoc;
-        window.onSnapshot = onSnapshot;
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schichtplanung</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style type="text/tailwindcss">
+.card{@apply bg-white p-4 rounded-xl shadow space-y-3}
+.inp{@apply w-full p-2 border border-slate-300 rounded-lg text-sm bg-white}
+.btn{@apply px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700}
+.btn2{@apply px-2 py-1 rounded text-xs font-semibold bg-slate-100 border hover:bg-slate-200}
+.lbl{@apply block text-xs font-medium text-slate-600 mb-1}
+th,td{@apply p-2 text-left}
+</style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen p-4 sm:p-6">
-    <div class="max-w-7xl mx-auto">
-        
-        <div id="authSection" class="max-w-md mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-md mt-6 sm:mt-12">
-            <h1 class="text-2xl font-bold text-center mb-6" id="authTitle">Anmelden</h1>
-            
-            <form id="authForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Benutzername</label>
-                    <input type="text" id="authUsername" required class="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
+<body class="bg-slate-100 text-slate-800 min-h-screen p-3 sm:p-6">
+<div class="max-w-4xl mx-auto">
+<div id="load" class="text-center p-10 text-slate-500">Lade Daten …</div>
 
-                <div>
-                    <label class="block text-sm font-medium mb-1">Passwort</label>
-                    <div class="relative">
-                        <input type="password" id="authPassword" required class="w-full p-2.5 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <button type="button" id="togglePasswordBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
-                            <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+<div id="auth" class="hidden max-w-sm mx-auto card mt-10">
+  <h1 class="text-xl font-bold text-center">Anmelden</h1>
+  <form id="authForm" class="space-y-3">
+    <div><label class="lbl">Benutzername</label><input id="au" required class="inp" autocomplete="username"></div>
+    <div><label class="lbl">Passwort</label><input id="ap" type="password" required class="inp" autocomplete="current-password"></div>
+    <button class="btn w-full">Einloggen</button>
+  </form>
+</div>
 
-                <button type="submit" id="authSubmitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium p-2.5 rounded-lg transition-colors">
-                    Einloggen
-                </button>
-            </form>
-        </div>
+<div id="app" class="hidden space-y-4">
+  <header class="flex justify-between items-center bg-white rounded-xl shadow px-4 py-3">
+    <h1 class="text-xl font-bold">Schichtplanung</h1>
+    <div class="text-sm">Angemeldet: <b id="who" class="text-blue-600"></b> <button id="logout" class="btn2 ml-2">Abmelden</button></div>
+  </header>
+  <nav id="tabs" class="flex gap-2 flex-wrap"></nav>
 
-        <div id="appSection" class="space-y-6 sm:space-y-8 hidden">
-            
-            <header class="flex flex-col sm:flex-row justify-between items-center border-b border-slate-200 pb-4 gap-4">
-                <div>
-                    <h1 class="text-2xl sm:text-3xl font-bold text-center sm:text-left">Schichtplanung</h1>
-                </div>
-                <div class="flex items-center gap-2 sm:gap-3 bg-white px-4 py-2 rounded-lg shadow-sm">
-                    <span class="text-xs sm:text-sm font-medium text-slate-700">Angemeldet: <span id="currentUserDisplay" class="text-blue-600 font-bold"></span></span>
-                    <button type="button" id="logoutBtn" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-md transition-colors font-medium">Abmelden</button>
-                </div>
-            </header>
+  <section id="t-form" class="card">
+    <h2 id="f-title" class="font-bold text-lg">Schicht eintragen</h2>
+    <form id="form" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div id="f-user-w" class="hidden"><label class="lbl">Mitarbeiter</label><select id="f-user" class="inp"></select></div>
+      <div><label class="lbl">Datum</label><input type="date" id="f-date" required class="inp"></div>
+      <div><label class="lbl">Schicht ab</label><select id="f-start" required class="inp"></select></div>
+      <div><label class="lbl">Pause</label><select id="f-break" required class="inp"></select></div>
+      <div class="flex items-center gap-2"><input type="checkbox" id="f-ho" class="w-4 h-4"><label for="f-ho" class="text-sm font-medium">Homeoffice (zählt nicht zu den 16 Büroplätzen)</label></div>
+      <div id="f-desk-w" class="hidden sm:col-span-2 space-y-2">
+        <label class="lbl">Platz (optional)</label><select id="f-desk" class="inp"></select>
+        <div id="plan" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+      </div>
+      <div class="sm:col-span-2 flex gap-2">
+        <button id="f-submit" class="btn">Schicht eintragen</button>
+        <button type="button" id="f-cancel" class="btn2 hidden">Abbrechen</button>
+      </div>
+    </form>
+  </section>
 
-            <div id="adminPanelWrapper" class="hidden space-y-6">
-                <div class="bg-amber-600 text-white p-4 rounded-xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center gap-2">
-                        <span class="font-bold uppercase text-xs bg-black/20 px-2 py-1 rounded">Admin-Steuerung</span>
-                    </div>
-                    <div class="flex gap-2 flex-wrap">
-                        <button type="button" id="adminTabOverviewBtn" class="px-4 py-2 rounded-lg text-xs font-bold bg-white text-amber-900 shadow transition-colors">Tages- & Gesamtplan</button>
-                        <button type="button" id="adminTabUsersBtn" class="px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white transition-colors">Mitarbeiterverwaltung</button>
-                        <button type="button" id="adminTabSettingsBtn" class="px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white transition-colors">Einstellungen & Raumplan</button>
-                    </div>
-                </div>
+  <section id="t-mine" class="card hidden"><h2 class="font-bold text-lg">Meine Schichten</h2><div id="mine"></div></section>
 
-                <div id="adminTabOverview" class="space-y-6">
-                    <div class="bg-white p-6 rounded-xl shadow-md space-y-4 border border-amber-200">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-3">
-                            <h3 class="text-lg font-bold text-amber-900" id="adminDaySummaryTitle">Schichtplan für das Datum</h3>
-                            <div class="flex flex-wrap items-center gap-2">
-                                <label for="adminDateSelect" class="text-xs sm:text-sm font-medium text-slate-600">Datum wählen:</label>
-                                <input type="date" id="adminDateSelect" class="p-1.5 border border-slate-300 rounded-lg text-xs sm:text-sm outline-none focus:ring-2 focus:ring-amber-500 font-semibold bg-slate-50">
-                                <button type="button" id="adminExportExcelBtn" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors">Excel-Export</button>
-                            </div>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                               <thead>
-                                    <tr class="border-b text-slate-500 text-xs sm:text-sm">
-                                        <th class="p-2 sm:p-3">Mitarbeiter</th>
-                                        <th class="p-2 sm:p-3 desk-col-header">Platz</th>
-                                        <th class="p-2 sm:p-3">Typ</th>
-                                        <th class="p-2 sm:p-3">Uhrzeit</th>
-                                        <th class="p-2 sm:p-3">Pause</th>
-                                        <th class="p-2 sm:p-3">Aktion</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adminDaySummaryTableBody" class="text-xs sm:text-sm"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="adminTabUsers" class="space-y-6 hidden">
-                    <div class="bg-white p-6 rounded-xl shadow-md space-y-6 border border-amber-200">
-                        <h2 class="text-lg sm:text-xl font-semibold text-amber-800">Mitarbeiter & Schichtzuweisung</h2>
-                        
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4">
-                                <h3 class="text-sm font-bold text-slate-700">Neuen Mitarbeiter anlegen</h3>
-                                <form id="adminCreateUserForm" class="space-y-3">
-                                    <input type="text" id="adminNewUsername" placeholder="Benutzername" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500">
-                                    <input type="text" id="adminNewPassword" placeholder="Start-Passwort" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500">
-                                    <button type="submit" class="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors">Benutzer erstellen</button>
-                                </form>
-                            </div>
-
-                            <div class="bg-amber-50 p-4 rounded-lg border border-amber-200 space-y-4">
-                                <h3 class="text-sm font-bold text-amber-900">Mitarbeiter direkt Schicht zuweisen</h3>
-                                <form id="adminDirectAssignForm" class="space-y-3">
-                                    <div>
-                                        <label class="block text-[10px] font-semibold text-slate-600 mb-1">Mitarbeiter</label>
-                                        <select id="adminDirectAssignUser" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-semibold text-slate-600 mb-1">Datum</label>
-                                        <input type="date" id="adminDirectAssignDate" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-semibold text-slate-600 mb-1">Startuhrzeit</label>
-                                        <select id="adminDirectAssignStart" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-semibold text-slate-600 mb-1">Pausenzeit</label>
-                                        <select id="adminDirectAssignBreak" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
-                                        </select>
-                                    </div>
-                                    <div id="adminDirectAssignDeskWrapper" class="hidden">
-                                        <label class="block text-[10px] font-semibold text-slate-600 mb-1">Platz (optional)</label>
-                                        <select id="adminDirectAssignDesk" class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-amber-500 bg-white">
-                                        </select>
-                                    </div>
-                                    <div class="flex items-center gap-2 pt-1">
-                                        <input type="checkbox" id="adminDirectAssignHO" class="w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500">
-                                        <label for="adminDirectAssignHO" class="text-xs font-semibold text-slate-700">Homeoffice (HO)</label>
-                                    </div>
-                                    <button type="submit" class="w-full bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold py-2 rounded-lg transition-colors">Schicht zuweisen</button>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div id="adminEditContainer" class="bg-blue-50 p-4 rounded-lg border border-blue-200 hidden">
-                            <h3 class="text-sm font-bold text-blue-900 mb-3">Benutzer bearbeiten: <span id="adminEditTargetUser" class="text-blue-600"></span></h3>
-                            <form id="adminEditUserForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <input type="hidden" id="adminEditOriginalUsername">
-                                <div>
-                                    <label class="block text-[10px] font-semibold text-slate-600 mb-1">Neuer Benutzername</label>
-                                    <input type="text" id="adminEditUsername" required class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-semibold text-slate-600 mb-1">Neues Passwort (optional)</label>
-                                    <input type="text" id="adminEditPassword" placeholder="Leer lassen = unverändert" class="w-full p-2 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500">
-                                </div>
-                                <div class="sm:col-span-2 flex justify-end gap-2">
-                                    <button type="button" id="adminCancelEditBtn" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg">Abbrechen</button>
-                                    <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg">Speichern</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div id="adminUserBookingsContainer" class="bg-amber-50 p-4 rounded-lg border border-amber-300 hidden space-y-3">
-                            <div class="flex justify-between items-center">
-                                <h3 class="text-sm font-bold text-amber-900">Einträge für: <span id="adminUserBookingsTitle" class="text-amber-700"></span></h3>
-                                <button type="button" id="closeAdminUserBookingsBtn" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1 rounded-md font-semibold">Schließen</button>
-                            </div>
-                            <div class="overflow-x-auto bg-white rounded-lg p-2 border">
-                                <table class="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr class="border-b text-slate-500 text-xs">
-                                            <th class="p-2">Datum</th>
-                                            <th class="p-2 desk-col-header">Platz</th>
-                                            <th class="p-2">Typ</th>
-                                            <th class="p-2">Uhrzeit</th>
-                                            <th class="p-2">Pause</th>
-                                            <th class="p-2">Aktion</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="adminUserBookingsTableBody" class="text-xs"></tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="border-b text-slate-500 text-xs sm:text-sm">
-                                        <th class="p-2 sm:p-3">Benutzername</th>
-                                        <th class="p-2 sm:p-3">Aktion</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adminUsersTableBody" class="text-xs sm:text-sm"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="adminTabSettings" class="space-y-6 hidden">
-                    <div class="bg-white p-6 rounded-xl shadow-md space-y-4 border border-amber-200">
-                        <h2 class="text-lg sm:text-xl font-semibold text-amber-800">System- & Raumplaneinstellungen</h2>
-                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex items-center justify-between">
-                            <div>
-                                <h4 class="text-sm font-bold text-slate-700">Raumplan & Platzwahl</h4>
-                                <p class="text-xs text-slate-500">Aktiviert die Platzwahl (P1-P16) für Mitarbeiter und Administratoren.</p>
-                            </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="adminToggleDeskBooking" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="adminMoveModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-                <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-amber-300">
-                    <h3 class="text-lg font-bold text-amber-900">Schicht bearbeiten</h3>
-                    <p class="text-xs text-slate-600">Mitarbeiter: <span id="modalEmployeeName" class="font-semibold text-slate-800"></span></p>
-                    
-                    <form id="adminMoveForm" class="space-y-4">
-                        <input type="hidden" id="modalBookingIndex">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Datum auswählen:</label>
-                            <input type="date" id="modalNewDate" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                            <p id="modalFormattedDatePreview" class="text-xs font-medium text-amber-700 mt-1"></p>
-                        </div>
-
-                        <div id="modalDeskGroup">
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Platz wählen (P1 - P16, optional):</label>
-                            <select id="modalNewDesk" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                            </select>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <input type="checkbox" id="modalNewHO" class="w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500">
-                            <label for="modalNewHO" class="text-xs font-semibold text-slate-700">Homeoffice (HO)</label>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Startuhrzeit:</label>
-                            <select id="modalNewStart" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Pausenzeit:</label>
-                            <select id="modalNewBreak" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                            </select>
-                        </div>
-
-                        <div class="flex justify-end gap-2 pt-3 border-t">
-                            <button type="button" id="cancelAdminMoveBtn" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg">Abbrechen</button>
-                            <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg">Änderungen speichern</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div id="adminPlanDragModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-                <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-amber-300">
-                    <h3 class="text-base font-bold text-amber-900">Mitarbeiter umsetzen oder löschen</h3>
-                    <p class="text-xs text-slate-600">Mitarbeiter <span id="planDragEmployee" class="font-semibold text-slate-800"></span> auf Platz <span id="planDragOldDesk" class="font-semibold text-slate-800"></span>:</p>
-                    <input type="hidden" id="planDragBookingIndex">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Freien Zielplatz wählen:</label>
-                        <select id="planDragTargetDesk" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                        </select>
-                    </div>
-                    <div class="flex justify-between items-center pt-2 border-t">
-                        <button type="button" id="planDragDeleteBtn" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-lg">Schicht löschen</button>
-                        <div class="flex gap-2">
-                            <button type="button" id="cancelPlanDragBtn" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg">Abbrechen</button>
-                            <button type="button" id="confirmPlanDragBtn" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg">Platz wechseln</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="adminAssignModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-                <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-amber-300">
-                    <h3 class="text-base font-bold text-amber-900">Mitarbeiter auf Platz zuweisen</h3>
-                    <p class="text-xs text-slate-600">Ziel-Platz: <span id="assignTargetDeskDisplay" class="font-semibold text-slate-800"></span></p>
-                    <form id="adminAssignForm" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Mitarbeiter auswählen:</label>
-                            <select id="assignEmployeeSelect" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Startuhrzeit:</label>
-                            <select id="assignStartTime" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Pausenzeit:</label>
-                            <select id="assignBreakTime" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                            </select>
-                        </div>
-                        <div class="flex justify-end gap-2 pt-2 border-t">
-                            <button type="button" id="cancelAssignBtn" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg">Abbrechen</button>
-                            <button type="submit" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg">Zuweisen</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div id="userEditBookingModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-                <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-blue-200">
-                    <h3 class="text-lg font-bold text-blue-900">Schicht bearbeiten</h3>
-                    
-                    <form id="userEditBookingForm" class="space-y-4">
-                        <input type="hidden" id="userEditBookingIndex">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Datum auswählen:</label>
-                            <input type="date" id="userEditDateInput" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-
-                        <div id="userEditDeskGroup">
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Platz wählen (P1 - P16, optional):</label>
-                            <select id="userEditDeskSelect" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                            </select>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <input type="checkbox" id="userEditHO" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
-                            <label for="userEditHO" class="text-xs font-semibold text-slate-700">Homeoffice (HO)</label>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Startuhrzeit:</label>
-                            <select id="userEditStartSelect" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">Pausenzeit:</label>
-                            <select id="userEditBreakSelect" required class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                            </select>
-                        </div>
-
-                        <div class="flex justify-end gap-2 pt-3 border-t">
-                            <button type="button" id="cancelUserEditBtn" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg">Abbrechen</button>
-                            <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg">Änderungen speichern</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div id="userHomeView" class="space-y-6">
-                
-                <div class="bg-blue-600 text-white p-4 rounded-xl shadow-md flex gap-2 flex-wrap">
-                    <button type="button" id="userTabCreateBtn" class="px-4 py-2 rounded-lg text-xs font-bold bg-white text-blue-900 shadow transition-colors">1. Schicht eintragen</button>
-                    <button type="button" id="userTabMyBookingsBtn" class="px-4 py-2 rounded-lg text-xs font-bold bg-blue-700 hover:bg-blue-800 text-white transition-colors">2. Meine Schichten</button>
-                    <button type="button" id="userTabDailyPlanBtn" class="px-4 py-2 rounded-lg text-xs font-bold bg-blue-700 hover:bg-blue-800 text-white transition-colors">3. Tagesschichtplan</button>
-                </div>
-
-                <div id="userTabCreate" class="space-y-6">
-                    <div class="bg-white p-6 rounded-xl shadow-md space-y-4 border border-blue-200">
-                        <h2 class="text-xl font-bold text-slate-800 border-b pb-3">Eigene Schicht eintragen</h2>
-                        <form id="bookingForm" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                            <div>
-                                <label class="block text-xs sm:text-sm font-medium mb-1">Mitarbeiter</label>
-                                <input type="text" id="employeeName" readonly class="w-full p-2 bg-slate-100 border border-slate-300 rounded-lg text-slate-700 font-semibold cursor-not-allowed text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs sm:text-sm font-medium mb-1">Datum</label>
-                                <input type="date" id="bookingDate" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs sm:text-sm font-medium mb-1">Schicht ab Uhrzeit <span class="text-red-500">*</span></label>
-                                <select id="startTime" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs sm:text-sm font-medium mb-1">Pausenzeit <span class="text-red-500">*</span></label>
-                                <select id="breakTime" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
-                                </select>
-                            </div>
-                            <div>
-                                <div class="flex items-center gap-2 mb-2">
-                                    <input type="checkbox" id="bookingIsHO" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
-                                    <label for="bookingIsHO" class="text-xs sm:text-sm font-medium text-slate-700">Homeoffice (HO)</label>
-                                </div>
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium p-2.5 rounded-lg transition-colors text-sm">
-                                    Schicht eintragen
-                                </button>
-                            </div>
-                        </form>
-
-                        <div id="roomPlanCard" class="space-y-4 pt-4 border-t hidden">
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                                <div>
-                                    <h3 class="text-sm font-semibold text-slate-700">Raumplan (Platz wählen - optional)</h3>
-                                    <p class="text-xs text-slate-500">Klicke auf einen freien Platz im Raumplan oder lass das Feld leer.</p>
-                                </div>
-                                <div class="flex items-center gap-4">
-                                    <button type="button" id="clearSelectedDeskBtn" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1 rounded font-medium">Auswahl aufheben</button>
-                                    <div class="flex gap-3 text-[10px] sm:text-xs font-medium">
-                                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-white border border-slate-400 rounded"></span> Frei</span>
-                                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-blue-600 rounded"></span> Gewählt</span>
-                                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-red-500 rounded"></span> Belegt</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <input type="text" id="selectedDeskDisplay" readonly placeholder="Kein Platz ausgewählt (optional)" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-700 font-semibold text-sm">
-                            <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-6 relative">
-                                <div class="w-full sm:w-1/2 flex flex-col justify-between py-2 sm:border-r-2 sm:border-dashed border-slate-300 sm:pr-6">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 text-center">Linker Bereich</div>
-                                    <div class="space-y-6 sm:space-y-10 my-auto">
-                                        <div class="bg-amber-50/60 p-3 rounded-xl border border-amber-200">
-                                            <div class="text-[10px] font-semibold text-slate-500 mb-2 text-center">Insel 2</div>
-                                            <div class="island-grid" id="island-2"></div>
-                                        </div>
-                                        <div class="bg-amber-50/60 p-3 rounded-xl border border-amber-200">
-                                            <div class="text-[10px] font-semibold text-slate-500 mb-2 text-center">Insel 1</div>
-                                            <div class="island-grid" id="island-1"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="w-full sm:w-1/2 flex flex-col py-2 sm:pl-2">
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 text-center">Rechter Bereich</div>
-                                    <div class="flex flex-col sm:flex-row gap-4 my-auto">
-                                        <div class="flex-1 bg-amber-50/60 p-3 rounded-xl border border-amber-200">
-                                            <div class="text-[10px] font-semibold text-slate-500 mb-2 text-center">Insel 3</div>
-                                            <div class="island-grid" id="island-3"></div>
-                                        </div>
-                                        <div class="flex-1 bg-amber-50/60 p-3 rounded-xl border border-amber-200">
-                                            <div class="text-[10px] font-semibold text-slate-500 mb-2 text-center">Insel 4</div>
-                                            <div class="island-grid" id="island-4"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="userTabMyBookings" class="space-y-6 hidden">
-                    <div class="bg-white p-6 rounded-xl shadow-md space-y-4 border border-blue-200">
-                        <h2 class="text-xl font-bold text-slate-800 border-b pb-3">Übersicht der eigenen Schichten</h2>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="border-b text-slate-500 text-xs sm:text-sm">
-                                        <th class="p-3 desk-col-header">Platz</th>
-                                        <th class="p-3">Typ</th>
-                                        <th class="p-3">Datum</th>
-                                        <th class="p-3">Uhrzeit</th>
-                                        <th class="p-3">Pause</th>
-                                        <th class="p-3">Aktion</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="myBookingsTableBody" class="text-xs sm:text-sm"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="userTabDailyPlan" class="space-y-6 hidden">
-                    <div class="bg-white p-6 rounded-xl shadow-md space-y-4 border border-blue-200">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-3">
-                            <h2 class="text-xl font-bold text-slate-800" id="userDailyPlanTitle">Tagesschichtplan insgesamt</h2>
-                            <div class="flex items-center gap-2">
-                                <label for="userViewDateSelect" class="text-xs sm:text-sm font-medium text-slate-600">Datum wählen:</label>
-                                <input type="date" id="userViewDateSelect" class="p-1.5 border border-slate-300 rounded-lg text-xs sm:text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold bg-slate-50">
-                            </div>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="border-b text-slate-500 text-xs sm:text-sm">
-                                        <th class="p-2 sm:p-3 desk-col-header">Platz</th>
-                                        <th class="p-2 sm:p-3">Name</th>
-                                        <th class="p-2 sm:p-3">Typ</th>
-                                        <th class="p-2 sm:p-3">Datum</th>
-                                        <th class="p-2 sm:p-3">Uhrzeit</th>
-                                        <th class="p-2 sm:p-3">Pause</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bookingsTableBody" class="text-xs sm:text-sm"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-
+  <section id="t-plan" class="card hidden">
+    <div class="flex flex-wrap justify-between items-center gap-2">
+      <h2 id="p-head" class="font-bold text-lg"></h2>
+      <div class="flex gap-2 items-center"><input type="date" id="p-date" class="inp !w-auto"><button id="csv" class="btn2 hidden">CSV-Export</button></div>
     </div>
-
-    <script>
-        let currentUser = localStorage.getItem('deskCurrentUser') || null;
-        let isAdmin = false;
-        let users = [];
-        let bookings = [];
-        let settings = { deskBookingEnabled: false };
-        let selectedDesk = null;
-        let currentActiveUserForModal = null;
-        let currentAdminAssignDesk = null;
-
-        const desks = [
-            { id: 'P1', island: 1 }, { id: 'P2', island: 1 }, { id: 'P3', island: 1 }, { id: 'P4', island: 1 },
-            { id: 'P5', island: 2 }, { id: 'P6', island: 2 }, { id: 'P7', island: 2 }, { id: 'P8', island: 2 },
-            { id: 'P9', island: 3 }, { id: 'P10', island: 3 }, { id: 'P11', island: 3 }, { id: 'P12', island: 3 },
-            { id: 'P13', island: 4 }, { id: 'P14', island: 4 }, { id: 'P15', island: 4 }, { id: 'P16', island: 4 }
-        ];
-
-        const authSection = document.getElementById('authSection');
-        const appSection = document.getElementById('appSection');
-        const adminPanelWrapper = document.getElementById('adminPanelWrapper');
-        const adminToggleDeskBooking = document.getElementById('adminToggleDeskBooking');
-        const adminDaySummaryTitle = document.getElementById('adminDaySummaryTitle');
-        const adminDaySummaryTableBody = document.getElementById('adminDaySummaryTableBody');
-        const adminExportExcelBtn = document.getElementById('adminExportExcelBtn');
-
-        const adminTabOverviewBtn = document.getElementById('adminTabOverviewBtn');
-        const adminTabUsersBtn = document.getElementById('adminTabUsersBtn');
-        const adminTabSettingsBtn = document.getElementById('adminTabSettingsBtn');
-        const adminTabOverview = document.getElementById('adminTabOverview');
-        const adminTabUsers = document.getElementById('adminTabUsers');
-        const adminTabSettings = document.getElementById('adminTabSettings');
-
-        const userTabCreateBtn = document.getElementById('userTabCreateBtn');
-        const userTabMyBookingsBtn = document.getElementById('userTabMyBookingsBtn');
-        const userTabDailyPlanBtn = document.getElementById('userTabDailyPlanBtn');
-        const userTabCreate = document.getElementById('userTabCreate');
-        const userTabMyBookings = document.getElementById('userTabMyBookings');
-        const userTabDailyPlan = document.getElementById('userTabDailyPlan');
-
-        const adminUsersTableBody = document.getElementById('adminUsersTableBody');
-        const adminCreateUserForm = document.getElementById('adminCreateUserForm');
-        const adminNewUsername = document.getElementById('adminNewUsername');
-        const adminNewPassword = document.getElementById('adminNewPassword');
-
-        const adminDirectAssignForm = document.getElementById('adminDirectAssignForm');
-        const adminDirectAssignUser = document.getElementById('adminDirectAssignUser');
-        const adminDirectAssignDate = document.getElementById('adminDirectAssignDate');
-        const adminDirectAssignStart = document.getElementById('adminDirectAssignStart');
-        const adminDirectAssignBreak = document.getElementById('adminDirectAssignBreak');
-        const adminDirectAssignDeskWrapper = document.getElementById('adminDirectAssignDeskWrapper');
-        const adminDirectAssignDesk = document.getElementById('adminDirectAssignDesk');
-        const adminDirectAssignHO = document.getElementById('adminDirectAssignHO');
-
-        const adminEditContainer = document.getElementById('adminEditContainer');
-        const adminEditUserForm = document.getElementById('adminEditUserForm');
-        const adminEditOriginalUsername = document.getElementById('adminEditOriginalUsername');
-        const adminEditTargetUser = document.getElementById('adminEditTargetUser');
-        const adminEditUsername = document.getElementById('adminEditUsername');
-        const adminEditPassword = document.getElementById('adminEditPassword');
-        const adminCancelEditBtn = document.getElementById('adminCancelEditBtn');
-
-        const adminUserBookingsContainer = document.getElementById('adminUserBookingsContainer');
-        const adminUserBookingsTitle = document.getElementById('adminUserBookingsTitle');
-        const adminUserBookingsTableBody = document.getElementById('adminUserBookingsTableBody');
-        const closeAdminUserBookingsBtn = document.getElementById('closeAdminUserBookingsBtn');
-
-        const adminMoveModal = document.getElementById('adminMoveModal');
-        const adminMoveForm = document.getElementById('adminMoveForm');
-        const modalBookingIndex = document.getElementById('modalBookingIndex');
-        const modalEmployeeName = document.getElementById('modalEmployeeName');
-        const modalNewDate = document.getElementById('modalNewDate');
-        const modalFormattedDatePreview = document.getElementById('modalFormattedDatePreview');
-        const modalNewDesk = document.getElementById('modalNewDesk');
-        const modalDeskGroup = document.getElementById('modalDeskGroup');
-        const modalNewHO = document.getElementById('modalNewHO');
-        const modalNewStart = document.getElementById('modalNewStart');
-        const modalNewBreak = document.getElementById('modalNewBreak');
-        const cancelAdminMoveBtn = document.getElementById('cancelAdminMoveBtn');
-
-        const adminPlanDragModal = document.getElementById('adminPlanDragModal');
-        const planDragEmployee = document.getElementById('planDragEmployee');
-        const planDragOldDesk = document.getElementById('planDragOldDesk');
-        const planDragBookingIndex = document.getElementById('planDragBookingIndex');
-        const planDragTargetDesk = document.getElementById('planDragTargetDesk');
-        const cancelPlanDragBtn = document.getElementById('cancelPlanDragBtn');
-        const confirmPlanDragBtn = document.getElementById('confirmPlanDragBtn');
-        const planDragDeleteBtn = document.getElementById('planDragDeleteBtn');
-
-        const adminAssignModal = document.getElementById('adminAssignModal');
-        const assignTargetDeskDisplay = document.getElementById('assignTargetDeskDisplay');
-        const assignEmployeeSelect = document.getElementById('assignEmployeeSelect');
-        const assignStartTime = document.getElementById('assignStartTime');
-        const assignBreakTime = document.getElementById('assignBreakTime');
-        const cancelAssignBtn = document.getElementById('cancelAssignBtn');
-        const adminAssignForm = document.getElementById('adminAssignForm');
-
-        const userEditBookingModal = document.getElementById('userEditBookingModal');
-        const userEditBookingForm = document.getElementById('userEditBookingForm');
-        const userEditBookingIndex = document.getElementById('userEditBookingIndex');
-        const userEditDateInput = document.getElementById('userEditDateInput');
-        const userEditDeskSelect = document.getElementById('userEditDeskSelect');
-        const userEditDeskGroup = document.getElementById('userEditDeskGroup');
-        const userEditHO = document.getElementById('userEditHO');
-        const userEditStartSelect = document.getElementById('userEditStartSelect');
-        const userEditBreakSelect = document.getElementById('userEditBreakSelect');
-        const cancelUserEditBtn = document.getElementById('cancelUserEditBtn');
-
-        const roomPlanCard = document.getElementById('roomPlanCard');
-        const clearSelectedDeskBtn = document.getElementById('clearSelectedDeskBtn');
-
-        const userHomeView = document.getElementById('userHomeView');
-        const myBookingsTableBody = document.getElementById('myBookingsTableBody');
-        const userViewDateSelect = document.getElementById('userViewDateSelect');
-
-        const adminDateSelect = document.getElementById('adminDateSelect');
-        const authTitle = document.getElementById('authTitle');
-        const authSubmitBtn = document.getElementById('authSubmitBtn');
-        const authForm = document.getElementById('authForm');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const togglePasswordBtn = document.getElementById('togglePasswordBtn');
-        const authPasswordInput = document.getElementById('authPassword');
-        const eyeIcon = document.getElementById('eyeIcon');
-
-        function escapeHTML(value) {
-            return String(value ?? '').replace(/[&<>"']/g, char => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-            }[char]));
-        }
-
-        function populateSelects() {
-            const timeOptionsHtml = '<option value="">Uhrzeit wählen</option>' + 
-                Array.from({length: 13}, (_, i) => {
-                    const m = (i % 2 === 0) ? '00' : '30';
-                    const h = 11 + Math.floor(i / 2);
-                    const timeStr = `${String(h).padStart(2, '0')}:${m}`;
-                    return `<option value="${timeStr}">${timeStr} Uhr</option>`;
-                }).join('');
-
-            const breakOptionsHtml = '<option value="">Pause wählen</option>' + 
-                [0, 15, 30, 45, 60, 75, 90].map(m => `<option value="${m} Minuten">${m} Minuten</option>`).join('');
-
-            const startSelects = ['adminDirectAssignStart', 'modalNewStart', 'assignStartTime', 'userEditStartSelect', 'startTime'];
-            const breakSelects = ['adminDirectAssignBreak', 'modalNewBreak', 'assignBreakTime', 'userEditBreakSelect', 'breakTime'];
-
-            startSelects.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.innerHTML = timeOptionsHtml;
-            });
-
-            breakSelects.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.innerHTML = breakOptionsHtml;
-            });
-        }
-
-        function getLocalDateISO(date = new Date()) {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        function csvEscape(value) {
-            let text = String(value ?? '');
-            if (/^[\s]*[=+\-@]/.test(text)) text = "'" + text;
-            return `"${text.replace(/"/g, '""')}"`;
-        }
-
-        function formatDateDE(dateStr) {
-            if (!dateStr) return '';
-            const parts = dateStr.split('-');
-            if (parts.length !== 3) return dateStr;
-            const year = parseInt(parts[0], 10);
-            const month = parseInt(parts[1], 10) - 1;
-            const day = parseInt(parts[2], 10);
-            const dateObj = new Date(year, month, day);
-            if (isNaN(dateObj.getTime())) return dateStr;
-
-            const options = { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' };
-            return dateObj.toLocaleDateString('de-DE', options);
-        }
-
-        function checkLeadTimeValid(dateStr) {
-            if (isAdmin) return true;
-            if (!dateStr) return false;
-            
-            const now = new Date();
-            const parts = dateStr.split('-');
-            const targetDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-            targetDate.setHours(0, 0, 0, 0);
-
-            const deadline = new Date(targetDate);
-            deadline.setDate(deadline.getDate() - 1);
-            deadline.setHours(14, 0, 0, 0);
-
-            return now <= deadline;
-        }
-
-        function checkLeadTimeOrAlert(dateStr) {
-            if (!checkLeadTimeValid(dateStr)) {
-                alert("Änderungen, Eintragungen und Löschungen sind für diesen Tag nur bis 14:00 Uhr des Vortages möglich. Bitte wende dich telefonisch oder per E-Mail an den Overhead. Dieser kann auch kurzfristig deine Schicht ändern oder löschen.");
-                return false;
-            }
-            return true;
-        }
-
-        togglePasswordBtn.onclick = () => {
-            if (authPasswordInput.type === 'password') {
-                authPasswordInput.type = 'text';
-                eyeIcon.innerHTML = `
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/>
-                `;
-            } else {
-                authPasswordInput.type = 'password';
-                eyeIcon.innerHTML = `
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                `;
-            }
-        };
-
-        function setupCloudSync() {
-            if (!window.db) {
-                setTimeout(setupCloudSync, 200);
-                return;
-            }
-
-            window.onSnapshot(window.doc(window.db, "app", "users"), (docSnap) => {
-                if (docSnap.exists()) {
-                    users = docSnap.data().list || [];
-                    if (isAdmin) {
-                        renderAdminUsers();
-                        populateAdminDirectAssignUserSelect();
-                    }
-                }
-            });
-
-            window.onSnapshot(window.doc(window.db, "app", "settings"), (docSnap) => {
-                if (docSnap.exists()) {
-                    settings = docSnap.data();
-                    if (adminToggleDeskBooking) adminToggleDeskBooking.checked = !!settings.deskBookingEnabled;
-                } else {
-                    settings = { deskBookingEnabled: false };
-                    if (adminToggleDeskBooking) adminToggleDeskBooking.checked = false;
-                }
-                updateDeskBookingVisibility();
-            });
-
-            window.onSnapshot(window.doc(window.db, "app", "bookings"), (docSnap) => {
-                if (docSnap.exists()) {
-                    bookings = docSnap.data().list || [];
-                    if (settings.deskBookingEnabled) renderRoomPlan();
-                    renderBookings();
-                    renderMyBookings();
-                    if (isAdmin) {
-                        renderAdminDaySummary();
-                        if (currentActiveUserForModal) {
-                            adminViewUserBookings(currentActiveUserForModal);
-                        }
-                    }
-                }
-            });
-
-            checkAuth();
-        }
-
-        async function saveCloudData(key, dataList) {
-            if (!window.db) {
-                alert('Keine Verbindung zur Datenbank. Bitte prüfe deine Internetverbindung und lade die Seite neu.');
-                return false;
-            }
-            try {
-                await window.setDoc(window.doc(window.db, "app", key), { list: dataList });
-                return true;
-            } catch (e) {
-                console.error("Cloud Error", e);
-                alert('Die Daten konnten nicht gespeichert werden. Bitte versuche es erneut.');
-                return false;
-            }
-        }
-
-        async function saveSettings(newSettings) {
-            if (!window.db) {
-                alert('Keine Verbindung zur Datenbank.');
-                return false;
-            }
-            try {
-                await window.setDoc(window.doc(window.db, "app", "settings"), newSettings);
-                return true;
-            } catch (e) {
-                console.error("Settings Error", e);
-                return false;
-            }
-        }
-
-        if (adminToggleDeskBooking) {
-            adminToggleDeskBooking.onchange = async () => {
-                settings.deskBookingEnabled = adminToggleDeskBooking.checked;
-                await saveSettings(settings);
-                updateDeskBookingVisibility();
-            };
-        }
-
-        if (adminExportExcelBtn) {
-            adminExportExcelBtn.onclick = () => {
-                const selDate = adminDateSelect.value;
-                const dayBookings = bookings.filter(b => b.date === selDate);
-                if (dayBookings.length === 0) {
-                    alert("Für diesen Tag sind keine Schichten vorhanden, die exportiert werden könnten.");
-                    return;
-                }
-
-                dayBookings.sort((a, b) => a.start.localeCompare(b.start));
-
-                let csvContent = "Mitarbeiter;Platz;Typ;Uhrzeit;Pause;Datum\n";
-                dayBookings.forEach(b => {
-                    const name = b.name || "";
-                    const desk = b.desk || "-";
-                    const type = b.isHO ? "HO" : "Büro";
-                    const start = b.start ? `ab ${b.start} Uhr` : "";
-                    const breakTime = b.breakTime || "0 Minuten";
-                    const date = formatDateDE(b.date);
-                    csvContent += [name, desk, type, start, breakTime, date].map(csvEscape).join(';') + '\n';
-                });
-
-                const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Schichtplan_${selDate}.csv`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            };
-        }
-
-        function updateDeskBookingVisibility() {
-            const deskHeaders = document.querySelectorAll('.desk-col-header');
-            deskHeaders.forEach(el => {
-                if (settings.deskBookingEnabled) {
-                    el.classList.remove('hidden');
-                } else {
-                    el.classList.add('hidden');
-                }
-            });
-
-            if (settings.deskBookingEnabled) {
-                if (roomPlanCard && !isAdmin) roomPlanCard.classList.remove('hidden');
-                if (modalDeskGroup) modalDeskGroup.classList.remove('hidden');
-                if (userEditDeskGroup) userEditDeskGroup.classList.remove('hidden');
-                if (adminDirectAssignDeskWrapper) adminDirectAssignDeskWrapper.classList.remove('hidden');
-                renderRoomPlan();
-            } else {
-                if (roomPlanCard) roomPlanCard.classList.add('hidden');
-                if (modalDeskGroup) modalDeskGroup.classList.add('hidden');
-                if (userEditDeskGroup) userEditDeskGroup.classList.add('hidden');
-                if (adminDirectAssignDeskWrapper) adminDirectAssignDeskWrapper.classList.add('hidden');
-            }
-            renderBookings();
-            renderMyBookings();
-            if (isAdmin) renderAdminDaySummary();
-        }
-
-        function switchAdminTab(tabName) {
-            adminTabOverview.classList.add('hidden');
-            adminTabUsers.classList.add('hidden');
-            adminTabSettings.classList.add('hidden');
-
-            adminTabOverviewBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white transition-colors";
-            adminTabUsersBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white transition-colors";
-            adminTabSettingsBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-amber-700 hover:bg-amber-800 text-white transition-colors";
-
-            if (tabName === 'overview') {
-                adminTabOverview.classList.remove('hidden');
-                adminTabOverviewBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-white text-amber-900 shadow transition-colors";
-                renderAdminDaySummary();
-            } else if (tabName === 'users') {
-                adminTabUsers.classList.remove('hidden');
-                adminTabUsersBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-white text-amber-900 shadow transition-colors";
-                renderAdminUsers();
-                populateAdminDirectAssignUserSelect();
-            } else if (tabName === 'settings') {
-                adminTabSettings.classList.remove('hidden');
-                adminTabSettingsBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-white text-amber-900 shadow transition-colors";
-            }
-        }
-
-        function switchUserTab(tabName) {
-            userTabCreate.classList.add('hidden');
-            userTabMyBookings.classList.add('hidden');
-            userTabDailyPlan.classList.add('hidden');
-
-            userTabCreateBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-blue-700 hover:bg-blue-800 text-white transition-colors";
-            userTabMyBookingsBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-blue-700 hover:bg-blue-800 text-white transition-colors";
-            userTabDailyPlanBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-blue-700 hover:bg-blue-800 text-white transition-colors";
-
-            if (tabName === 'create') {
-                userTabCreate.classList.remove('hidden');
-                userTabCreateBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-white text-blue-900 shadow transition-colors";
-            } else if (tabName === 'myBookings') {
-                userTabMyBookings.classList.remove('hidden');
-                userTabMyBookingsBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-white text-blue-900 shadow transition-colors";
-                renderMyBookings();
-            } else if (tabName === 'dailyPlan') {
-                userTabDailyPlan.classList.remove('hidden');
-                userTabDailyPlanBtn.className = "px-4 py-2 rounded-lg text-xs font-bold bg-white text-blue-900 shadow transition-colors";
-                renderBookings();
-            }
-        }
-
-        adminTabOverviewBtn.onclick = () => switchAdminTab('overview');
-        adminTabUsersBtn.onclick = () => switchAdminTab('users');
-        adminTabSettingsBtn.onclick = () => switchAdminTab('settings');
-
-        userTabCreateBtn.onclick = () => switchUserTab('create');
-        userTabMyBookingsBtn.onclick = () => switchUserTab('myBookings');
-        userTabDailyPlanBtn.onclick = () => switchUserTab('dailyPlan');
-
-        adminCreateUserForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const newU = adminNewUsername.value.trim();
-            const newP = adminNewPassword.value;
-            if (!isValidUsername(newU)) {
-                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten.');
-                return;
-            }
-
-            if (newU.toLowerCase() === 'admin') {
-                alert('Der Benutzername "admin" ist bereits reserviert.');
-                return;
-            }
-
-            const userExists = users.some(u => u.username.toLowerCase() === newU.toLowerCase());
-            if (userExists) {
-                alert('Dieser Benutzername existiert bereits.');
-                return;
-            }
-
-            users.push({ username: newU, password: newP });
-            await saveCloudData("users", users);
-
-            adminNewUsername.value = '';
-            adminNewPassword.value = '';
-            renderAdminUsers();
-            populateAdminDirectAssignUserSelect();
-            alert(`Benutzer "${newU}" wurde erfolgreich angelegt.`);
-        };
-
-        function populateAdminDirectAssignUserSelect() {
-            if (!adminDirectAssignUser) return;
-            
-            let userOptions = '<option value="">Mitarbeiter wählen</option>';
-            users.forEach(u => {
-                userOptions += `<option value="${u.username}">${u.username}</option>`;
-            });
-            adminDirectAssignUser.innerHTML = userOptions;
-
-            if (adminDirectAssignDesk) {
-                let deskOptions = '<option value="">Kein Platz</option>';
-                desks.forEach(d => {
-                    deskOptions += `<option value="${d.id}">Platz ${d.id}</option>`;
-                });
-                adminDirectAssignDesk.innerHTML = deskOptions;
-            }
-
-            const today = getLocalDateISO();
-            if (adminDirectAssignDate && !adminDirectAssignDate.value) adminDirectAssignDate.value = today;
-            
-            if (adminDirectAssignStart) adminDirectAssignStart.value = '';
-            if (adminDirectAssignBreak) adminDirectAssignBreak.value = '';
-        }
-
-        adminDirectAssignForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const username = adminDirectAssignUser.value;
-            const date = adminDirectAssignDate.value;
-            const start = adminDirectAssignStart.value;
-            const breakTime = adminDirectAssignBreak.value;
-            const desk = settings.deskBookingEnabled ? adminDirectAssignDesk.value : "";
-            const isHO = adminDirectAssignHO.checked;
-
-            if (!checkLeadTimeOrAlert(date)) return;
-
-            const dayCount = bookings.filter(b => b.date === date).length;
-            if (dayCount >= 16) {
-                alert("Für diesen Tag sind bereits maximal 16 Schichten eingetragen.");
-                return;
-            }
-
-            if (!username) {
-                alert('Bitte wählen Sie einen Mitarbeiter aus.');
-                return;
-            }
-
-            const alreadyBooked = bookings.find(b => b.name.toLowerCase() === username.toLowerCase() && b.date === date);
-            if (alreadyBooked) {
-                alert(`Der Mitarbeiter ${username} hat am ${formatDateDE(date)} bereits eine Schicht eingetragen!`);
-                return;
-            }
-
-            if (settings.deskBookingEnabled && desk && !isHO) {
-                const deskConflict = bookings.find(b => b.date === date && b.desk === desk);
-                if (deskConflict) {
-                    alert(`Der Platz ${desk} ist am ${formatDateDE(date)} bereits durch ${deskConflict.name} belegt!`);
-                    return;
-                }
-            }
-
-            bookings.push({ desk: isHO ? "" : desk, name: username, date, start, breakTime, isHO });
-            await saveCloudData("bookings", bookings);
-
-            adminDirectAssignForm.reset();
-            populateAdminDirectAssignUserSelect();
-            renderBookings();
-            renderAdminDaySummary();
-            alert(`Schicht erfolgreich für ${username} zugewiesen!`);
-        };
-
-        function adminStartEditUser(username) {
-            const userObj = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-            if (!userObj) return;
-
-            adminEditOriginalUsername.value = userObj.username;
-            adminEditTargetUser.textContent = userObj.username;
-            adminEditUsername.value = userObj.username;
-            adminEditPassword.value = '';
-
-            adminEditContainer.classList.remove('hidden');
-            adminEditContainer.scrollIntoView({ behavior: 'smooth' });
-        }
-        window.adminStartEditUser = adminStartEditUser;
-
-        adminCancelEditBtn.onclick = () => {
-            adminEditContainer.classList.add('hidden');
-        };
-
-        adminEditUserForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const origName = adminEditOriginalUsername.value;
-            const updatedName = adminEditUsername.value.trim();
-            const updatedPass = adminEditPassword.value;
-            if (!isValidUsername(updatedName)) {
-                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten.');
-                return;
-            }
-
-            const userIndex = users.findIndex(u => u.username.toLowerCase() === origName.toLowerCase());
-            if (userIndex === -1) return;
-
-            if (updatedName.toLowerCase() !== origName.toLowerCase()) {
-                const nameTaken = users.some(u => u.username.toLowerCase() === updatedName.toLowerCase());
-                if (nameTaken) {
-                    alert('Dieser Benutzername ist bereits vergeben.');
-                    return;
-                }
-            }
-
-            if (updatedName !== origName) {
-                bookings.forEach(b => {
-                    if (b.name === origName) b.name = updatedName;
-                });
-                await saveCloudData("bookings", bookings);
-            }
-
-            users[userIndex].username = updatedName;
-            if (updatedPass) {
-                users[userIndex].password = updatedPass;
-            }
-
-            await saveCloudData("users", users);
-            adminEditContainer.classList.add('hidden');
-            renderAdminUsers();
-            populateAdminDirectAssignUserSelect();
-            renderBookings();
-            renderMyBookings();
-            if (settings.deskBookingEnabled) renderRoomPlan();
-            renderAdminDaySummary();
-            alert('Benutzer erfolgreich aktualisiert!');
-        };
-
-        async function adminDeleteUser(username) {
-            const confirmDelete = confirm(`Möchtest du den Benutzer "${username}" und all seine Schichten wirklich löschen?`);
-            if (!confirmDelete) return;
-
-            users = users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
-            await saveCloudData("users", users);
-
-            bookings = bookings.filter(b => b.name !== username);
-            await saveCloudData("bookings", bookings);
-
-            renderAdminUsers();
-            populateAdminDirectAssignUserSelect();
-            renderBookings();
-            renderMyBookings();
-            if (settings.deskBookingEnabled) renderRoomPlan();
-            renderAdminDaySummary();
-            adminUserBookingsContainer.classList.add('hidden');
-            alert(`Benutzer "${username}" wurde erfolgreich gelöscht.`);
-        }
-        window.adminDeleteUser = adminDeleteUser;
-
-        function adminViewUserBookings(username) {
-            currentActiveUserForModal = username;
-            adminUserBookingsTitle.textContent = username;
-            adminUserBookingsTableBody.innerHTML = '';
-
-            const userBookings = bookings.filter(b => b.name.toLowerCase() === username.toLowerCase());
-
-            if (userBookings.length === 0) {
-                adminUserBookingsTableBody.innerHTML = '<tr><td colspan="6" class="p-3 text-center text-slate-400">Keine Schichten vorhanden.</td></tr>';
-            } else {
-                userBookings.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
-                const fragment = document.createDocumentFragment();
-                
-                userBookings.forEach(b => {
-                    const globalIndex = bookings.indexOf(b);
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b';
-                    let deskCell = settings.deskBookingEnabled ? `<td class="p-2 font-bold text-blue-600">${b.desk || '-'}</td>` : '';
-                    let typeCell = `<td class="p-2 font-semibold ${b.isHO ? 'text-purple-600' : 'text-slate-700'}">${b.isHO ? 'HO' : 'Büro'}</td>`;
-                    tr.innerHTML = `
-                        <td class="p-2 font-medium">${formatDateDE(b.date)}</td>
-                        ${deskCell}
-                        ${typeCell}
-                        <td class="p-2">ab ${b.start} Uhr</td>
-                        <td class="p-2">${b.breakTime || '0 Minuten'}</td>
-                        <td class="p-2 flex gap-1 items-center">
-                            <button type="button" onclick="openAdminMoveModal(${globalIndex})" class="text-blue-600 hover:text-blue-800 font-medium text-xs bg-blue-50 px-2 py-1 rounded border border-blue-200">Bearbeiten</button>
-                            <button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2 py-1 rounded border border-red-200">Löschen</button>
-                        </td>
-                    `;
-                    fragment.appendChild(tr);
-                });
-                adminUserBookingsTableBody.appendChild(fragment);
-            }
-
-            adminUserBookingsContainer.classList.remove('hidden');
-            adminUserBookingsContainer.scrollIntoView({ behavior: 'smooth' });
-        }
-        window.adminViewUserBookings = adminViewUserBookings;
-
-        function openAdminMoveModal(globalIndex) {
-            const booking = bookings[globalIndex];
-            if (!booking) return;
-
-            if (!checkLeadTimeOrAlert(booking.date)) return;
-
-            modalBookingIndex.value = globalIndex;
-            modalEmployeeName.textContent = booking.name;
-            modalNewDate.value = booking.date;
-            modalFormattedDatePreview.textContent = formatDateDE(booking.date);
-            modalNewHO.checked = !!booking.isHO;
-            
-            modalNewStart.value = booking.start;
-            modalNewBreak.value = booking.breakTime || '0 Minuten';
-
-            if (settings.deskBookingEnabled) {
-                modalDeskGroup.classList.remove('hidden');
-                let deskOptions = '<option value="">Kein Platz (optional)</option>';
-                desks.forEach(d => {
-                    deskOptions += `<option value="${d.id}" ${d.id === booking.desk ? 'selected' : ''}>Platz ${d.id}</option>`;
-                });
-                modalNewDesk.innerHTML = deskOptions;
-            } else {
-                modalDeskGroup.classList.add('hidden');
-            }
-
-            adminMoveModal.classList.remove('hidden');
-        }
-        window.openAdminMoveModal = openAdminMoveModal;
-
-        modalNewDate.addEventListener('change', (e) => {
-            modalFormattedDatePreview.textContent = formatDateDE(e.target.value);
-        });
-
-        cancelAdminMoveBtn.onclick = () => {
-            adminMoveModal.classList.add('hidden');
-        };
-
-        adminMoveForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const gIndex = parseInt(modalBookingIndex.value, 10);
-            const booking = bookings[gIndex];
-            if (!booking) return;
-
-            const newDate = modalNewDate.value;
-            const newDesk = settings.deskBookingEnabled ? modalNewDesk.value : "";
-            const newStart = modalNewStart.value;
-            const newBreak = modalNewBreak.value;
-            const newHO = modalNewHO.checked;
-
-            if (!checkLeadTimeOrAlert(newDate) || !checkLeadTimeOrAlert(booking.date)) return;
-
-            if (newDate !== booking.date) {
-                const dayCount = bookings.filter(b => b.date === newDate).length;
-                if (dayCount >= 16) {
-                    alert("Für diesen Zieltag sind bereits maximal 16 Schichten eingetragen.");
-                    return;
-                }
-            }
-
-            const existingForUser = bookings.find((b, idx) => idx !== gIndex && b.name.toLowerCase() === booking.name.toLowerCase() && b.date === newDate);
-            if (existingForUser) {
-                alert(`Der Mitarbeiter ${booking.name} hat am ${formatDateDE(newDate)} bereits eine Schicht eingetragen!`);
-                return;
-            }
-
-            if (settings.deskBookingEnabled && newDesk && !newHO) {
-                const conflict = bookings.find((b, idx) => idx !== gIndex && b.desk === newDesk && b.date === newDate);
-                if (conflict) {
-                    alert(`Der Platz ${newDesk} ist am ${formatDateDE(newDate)} bereits durch ${conflict.name} belegt!`);
-                    return;
-                }
-            }
-
-            booking.date = newDate;
-            booking.desk = newHO ? "" : newDesk;
-            booking.start = newStart;
-            booking.breakTime = newBreak;
-            booking.isHO = newHO;
-
-            await saveCloudData("bookings", bookings);
-
-            adminMoveModal.classList.add('hidden');
-            renderBookings();
-            renderMyBookings();
-            if (settings.deskBookingEnabled) renderRoomPlan();
-            renderAdminDaySummary();
-            if (currentActiveUserForModal) {
-                adminViewUserBookings(currentActiveUserForModal);
-            }
-            alert("Schicht erfolgreich aktualisiert!");
-        };
-
-        function openPlanDragModal(booking, currentDate) {
-            if (!checkLeadTimeOrAlert(currentDate)) return;
-
-            const globalIndex = bookings.indexOf(booking);
-            planDragBookingIndex.value = globalIndex;
-            planDragEmployee.textContent = booking.name;
-            planDragOldDesk.textContent = booking.desk;
-
-            let deskOptions = '<option value="">Kein Platz (Platz freigeben)</option>';
-            desks.forEach(d => {
-                const isOccupied = bookings.some(b => b.date === currentDate && b.desk === d.id);
-                if (!isOccupied || d.id === booking.desk) {
-                    deskOptions += `<option value="${d.id}" ${d.id === booking.desk ? 'selected' : ''}>Platz ${d.id} ${d.id === booking.desk ? '(aktuell)' : '(frei)'}</option>`;
-                }
-            });
-            planDragTargetDesk.innerHTML = deskOptions;
-
-            adminPlanDragModal.classList.remove('hidden');
-        }
-
-        cancelPlanDragBtn.onclick = () => {
-            adminPlanDragModal.classList.add('hidden');
-        };
-
-        planDragDeleteBtn.onclick = async () => {
-            const gIndex = parseInt(planDragBookingIndex.value, 10);
-            adminPlanDragModal.classList.add('hidden');
-            await confirmAndDeleteBooking(gIndex);
-        };
-
-        confirmPlanDragBtn.onclick = async () => {
-            const gIndex = parseInt(planDragBookingIndex.value, 10);
-            const booking = bookings[gIndex];
-            if (!booking) return;
-
-            const targetDesk = planDragTargetDesk.value;
-            booking.desk = targetDesk;
-
-            await saveCloudData("bookings", bookings);
-
-            adminPlanDragModal.classList.add('hidden');
-            renderBookings();
-            renderMyBookings();
-            renderRoomPlan();
-            renderAdminDaySummary();
-            alert(`Mitarbeiter erfolgreich aktualisiert!`);
-        };
-
-        function openAdminAssignModal(deskId, currentDate) {
-            if (!checkLeadTimeOrAlert(currentDate)) return;
-
-            const dayCount = bookings.filter(b => b.date === currentDate).length;
-            if (dayCount >= 16) {
-                alert("Für diesen Tag sind bereits maximal 16 Schichten eingetragen.");
-                return;
-            }
-
-            currentAdminAssignDesk = deskId;
-            assignTargetDeskDisplay.textContent = `Platz ${deskId} am ${formatDateDE(currentDate)}`;
-
-            let userOptions = '<option value="">Mitarbeiter wählen</option>';
-            users.forEach(u => {
-                const alreadyBooked = bookings.some(b => b.name.toLowerCase() === u.username.toLowerCase() && b.date === currentDate);
-                if (!alreadyBooked) {
-                    userOptions += `<option value="${u.username}">${u.username}</option>`;
-                }
-            });
-            assignEmployeeSelect.innerHTML = userOptions;
-
-            assignStartTime.value = '';
-            assignBreakTime.value = '';
-
-            adminAssignModal.classList.remove('hidden');
-        }
-
-        cancelAssignBtn.onclick = () => {
-            adminAssignModal.classList.add('hidden');
-        };
-
-        adminAssignForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const empName = assignEmployeeSelect.value;
-            const startTime = assignStartTime.value;
-            const breakTime = assignBreakTime.value;
-            const date = document.getElementById('bookingDate').value;
-
-            if (!checkLeadTimeOrAlert(date)) return;
-
-            const dayCount = bookings.filter(b => b.date === date).length;
-            if (dayCount >= 16) {
-                alert("Für diesen Tag sind bereits maximal 16 Schichten eingetragen.");
-                return;
-            }
-
-            if (!empName) {
-                alert('Bitte wählen Sie einen Mitarbeiter aus.');
-                return;
-            }
-
-            const existing = bookings.find(b => b.name.toLowerCase() === empName.toLowerCase() && b.date === date);
-            if (existing) {
-                alert(`Der Mitarbeiter ${empName} hat an diesem Tag bereits eine Schicht eingetragen!`);
-                return;
-            }
-
-            const newBooking = { desk: currentAdminAssignDesk, name: empName, date, start: startTime, breakTime, isHO: false };
-            bookings.push(newBooking);
-
-            await saveCloudData("bookings", bookings);
-
-            adminAssignModal.classList.add('hidden');
-            renderBookings();
-            renderMyBookings();
-            if (settings.deskBookingEnabled) renderRoomPlan();
-            if (isAdmin) {
-                renderAdminDaySummary();
-            }
-            alert(`Mitarbeiter ${empName} erfolgreich auf Platz ${currentAdminAssignDesk} zugewiesen!`);
-        };
-
-        function openUserEditBookingModal(globalIndex) {
-            const booking = bookings[globalIndex];
-            if (!booking) return;
-
-            if (!checkLeadTimeOrAlert(booking.date)) return;
-
-            userEditBookingIndex.value = globalIndex;
-            userEditDateInput.value = booking.date;
-            userEditHO.checked = !!booking.isHO;
-            
-            userEditStartSelect.value = booking.start;
-            userEditBreakSelect.value = booking.breakTime || '0 Minuten';
-
-            if (settings.deskBookingEnabled) {
-                userEditDeskGroup.classList.remove('hidden');
-                let deskOptions = '<option value="">Kein Platz (optional)</option>';
-                desks.forEach(d => {
-                    const isOccupied = bookings.some((b, idx) => idx !== globalIndex && b.date === booking.date && b.desk === d.id);
-                    if (!isOccupied || d.id === booking.desk) {
-                        deskOptions += `<option value="${d.id}" ${d.id === booking.desk ? 'selected' : ''}>Platz ${d.id} ${d.id === booking.desk ? '(aktuell)' : '(frei)'}</option>`;
-                    }
-                });
-                userEditDeskSelect.innerHTML = deskOptions;
-            } else {
-                userEditDeskGroup.classList.add('hidden');
-            }
-
-            userEditBookingModal.classList.remove('hidden');
-        }
-        window.openUserEditBookingModal = openUserEditBookingModal;
-
-        cancelUserEditBtn.onclick = () => {
-            userEditBookingModal.classList.add('hidden');
-        };
-
-        userEditBookingForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const gIndex = parseInt(userEditBookingIndex.value, 10);
-            const booking = bookings[gIndex];
-            if (!booking) return;
-
-            const newDate = userEditDateInput.value;
-            const newDesk = settings.deskBookingEnabled ? userEditDeskSelect.value : "";
-            const newStart = userEditStartSelect.value;
-            const newBreak = userEditBreakSelect.value;
-            const newHO = userEditHO.checked;
-
-            if (!checkLeadTimeOrAlert(newDate) || !checkLeadTimeOrAlert(booking.date)) return;
-
-            if (newDate !== booking.date) {
-                const dayCount = bookings.filter(b => b.date === newDate).length;
-                if (dayCount >= 16) {
-                    alert("Für diesen Zieltag sind bereits maximal 16 Schichten eingetragen.");
-                    return;
-                }
-            }
-
-            const existingForUser = bookings.find((b, idx) => idx !== gIndex && b.name.toLowerCase() === booking.name.toLowerCase() && b.date === newDate);
-            if (existingForUser) {
-                alert(`Sie haben am ${formatDateDE(newDate)} bereits eine Schicht eingetragen!`);
-                return;
-            }
-
-            if (settings.deskBookingEnabled && newDesk && !newHO) {
-                const conflict = bookings.find((b, idx) => idx !== gIndex && b.desk === newDesk && b.date === newDate);
-                if (conflict) {
-                    alert(`Der Platz ${newDesk} ist an diesem Tag bereits belegt!`);
-                    return;
-                }
-            }
-
-            booking.date = newDate;
-            booking.desk = newHO ? "" : newDesk;
-            booking.start = newStart;
-            booking.breakTime = newBreak;
-            booking.isHO = newHO;
-
-            await saveCloudData("bookings", bookings);
-
-            userEditBookingModal.classList.add('hidden');
-            renderBookings();
-            renderMyBookings();
-            if (settings.deskBookingEnabled) renderRoomPlan();
-            if (isAdmin) {
-                renderAdminDaySummary();
-            }
-            alert("Schicht erfolgreich aktualisiert!");
-        };
-
-        closeAdminUserBookingsBtn.onclick = () => {
-            currentActiveUserForModal = null;
-            adminUserBookingsContainer.classList.add('hidden');
-        };
-
-        function renderAdminUsers() {
-            adminUsersTableBody.innerHTML = '';
-            if (users.length === 0) {
-                adminUsersTableBody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400">Keine registrierten Benutzer vorhanden.</td></tr>';
-                return;
-            }
-
-            const fragment = document.createDocumentFragment();
-            users.forEach((u) => {
-                const tr = document.createElement('tr');
-                tr.className = 'border-b hover:bg-slate-50';
-                tr.innerHTML = `
-                    <td class="p-2 sm:p-3 font-semibold text-slate-750">
-                        <button type="button" onclick="adminViewUserBookings('${u.username}')" class="text-blue-600 hover:underline font-bold text-left" title="Schichten anzeigen">${escapeHTML(u.username)}</button>
-                    </td>
-                    <td class="p-2 sm:p-3 flex gap-2">
-                        <button type="button" onclick="adminViewUserBookings('${u.username}')" class="text-amber-700 hover:text-amber-900 font-medium text-xs bg-amber-50 px-2 py-1 rounded border border-amber-200">Schichten</button>
-                        <button type="button" onclick="adminStartEditUser('${u.username}')" class="text-blue-600 hover:text-blue-800 font-medium text-xs bg-blue-50 px-2 py-1 rounded border border-blue-200">Bearbeiten</button>
-                        <button type="button" onclick="adminDeleteUser('${u.username}')" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2 py-1 rounded border border-red-200">Löschen</button>
-                    </td>
-                `;
-                fragment.appendChild(tr);
-            });
-            adminUsersTableBody.appendChild(fragment);
-        }
-
-        function isValidUsername(username) {
-            return /^[\p{L}\p{N}._-]{1,40}$/u.test(String(username || '').trim());
-        }
-
-        authForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('authUsername').value.trim();
-            const password = authPasswordInput.value;
-            if (!isValidUsername(username)) {
-                alert('Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten.');
-                return;
-            }
-
-            if (username.toLowerCase() === 'admin' && password === 'admin123') {
-                loginUser('Admin');
-                return;
-            }
-
-            const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
-            if (!user) {
-                alert('Ungültige Anmeldedaten oder kein Konto vorhanden.');
-                return;
-            }
-            loginUser(user.username);
-        };
-
-        function loginUser(username) {
-            currentUser = username;
-            localStorage.setItem('deskCurrentUser', username);
-            document.getElementById('authUsername').value = '';
-            authPasswordInput.value = '';
-            checkAuth();
-        }
-
-        logoutBtn.onclick = () => {
-            currentUser = null;
-            localStorage.removeItem('deskCurrentUser');
-            adminEditContainer.classList.add('hidden');
-            adminUserBookingsContainer.classList.add('hidden');
-            currentActiveUserForModal = null;
-            checkAuth();
-        };
-
-        function checkAuth() {
-            if (currentUser) {
-                isAdmin = (currentUser.toLowerCase() === 'admin');
-                authSection.classList.add('hidden');
-                appSection.classList.remove('hidden');
-                document.getElementById('currentUserDisplay').textContent = currentUser;
-                const empInput = document.getElementById('employeeName');
-                if (empInput) empInput.value = currentUser;
-
-                if (isAdmin) {
-                    adminPanelWrapper.classList.remove('hidden');
-                    renderAdminUsers();
-                    renderAdminDaySummary();
-                    populateAdminDirectAssignUserSelect();
-                    userHomeView.classList.add('hidden');
-                } else {
-                    adminPanelWrapper.classList.add('hidden');
-                    adminUserBookingsContainer.classList.add('hidden');
-                    currentActiveUserForModal = null;
-                    userHomeView.classList.remove('hidden');
-                    switchUserTab('create');
-                }
-
-                if (settings.deskBookingEnabled) renderRoomPlan();
-                renderBookings();
-            } else {
-                authSection.classList.remove('hidden');
-                appSection.classList.add('hidden');
-                adminPanelWrapper.classList.add('hidden');
-                adminEditContainer.classList.add('hidden');
-                adminUserBookingsContainer.classList.add('hidden');
-                currentActiveUserForModal = null;
-            }
-        }
-
-        adminDateSelect.addEventListener('change', (e) => {
-            const selectedDate = e.target.value;
-            if (selectedDate) {
-                const bookingDateInput = document.getElementById('bookingDate');
-                if (bookingDateInput) bookingDateInput.value = selectedDate;
-                if (settings.deskBookingEnabled) renderRoomPlan();
-                renderBookings();
-                renderAdminDaySummary();
-            }
-        });
-
-        userViewDateSelect.addEventListener('change', () => {
-            renderBookings();
-        });
-
-        if (clearSelectedDeskBtn) {
-            clearSelectedDeskBtn.onclick = () => {
-                selectedDesk = null;
-                const deskDisplay = document.getElementById('selectedDeskDisplay');
-                if (deskDisplay) deskDisplay.value = '';
-                if (settings.deskBookingEnabled) renderRoomPlan();
-            };
-        }
-
-        function getBookingForDesk(deskId, date) {
-            if (!date) return null;
-            return bookings.find(b => b.desk === deskId && b.date === date && !b.isHO) || null;
-        }
-
-        function renderRoomPlan() {
-            if (!settings.deskBookingEnabled) return;
-            const bookingDateInput = document.getElementById('bookingDate');
-            const date = bookingDateInput ? bookingDateInput.value : new Date().toISOString().split('T')[0];
-
-            for (let i = 1; i <= 4; i++) {
-                const container = document.getElementById(`island-${i}`);
-                if (!container) continue;
-                container.className = "grid grid-cols-2 gap-2 sm:gap-3 bg-amber-100/70 p-2 sm:p-3 rounded-lg border-2 border-amber-300 relative shadow-inner";
-                container.innerHTML = '';
-
-                const islandDesks = desks.filter(d => d.island === i);
-
-                islandDesks.forEach((desk) => {
-                    const booking = getBookingForDesk(desk.id, date);
-                    const occupied = !!booking;
-                    const isSelected = selectedDesk === desk.id;
-
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-
-                    let baseStyle = "w-full h-14 sm:h-16 rounded-lg font-bold text-xs tracking-wide transition-all flex flex-col items-center justify-center border-2 shadow-sm relative px-1 overflow-hidden ";
-                    
-                    if (occupied) {
-                        baseStyle += "bg-red-500 text-white border-red-600 opacity-90 ";
-                        if (isAdmin) {
-                            baseStyle += "cursor-pointer hover:bg-red-600 hover:ring-2 hover:ring-amber-300";
-                        } else {
-                            baseStyle += "cursor-not-allowed";
-                            btn.disabled = true;
-                        }
-                    } else if (isAdmin) {
-                        baseStyle += "bg-white hover:bg-amber-50 text-slate-700 border-slate-300 hover:border-amber-400 cursor-pointer";
-                    } else if (isSelected) {
-                        baseStyle += "bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400 scale-105 z-10";
-                    } else {
-                        baseStyle += "bg-white hover:bg-blue-50 text-slate-700 border-slate-300 hover:border-blue-400";
-                    }
-
-                    btn.className = baseStyle;
-                    
-                    if (occupied) {
-                        btn.innerHTML = `
-                            <span class="truncate w-full font-bold text-[11px]" title="${escapeHTML(booking.name)}">${escapeHTML(booking.name)}</span>
-                            <span class="text-[9px] opacity-90 font-normal">ab ${booking.start}</span>
-                            ${isAdmin ? '<span class="text-[8px] bg-black/30 px-1 rounded mt-0.5">Bearbeiten / Löschen</span>' : ''}
-                        `;
-                    } else {
-                        btn.innerHTML = `
-                            <span class="text-xs sm:text-sm">${desk.id}</span>
-                            ${isAdmin ? '<span class="text-[8px] text-amber-600 font-medium">Zuweisen</span>' : ''}
-                        `;
-                    }
-
-                    btn.onclick = () => {
-                        if (isAdmin) {
-                            if (occupied) {
-                                openPlanDragModal(booking, date);
-                            } else {
-                                openAdminAssignModal(desk.id, date);
-                            }
-                        } else if (!occupied) {
-                            if (selectedDesk === desk.id) {
-                                selectedDesk = null;
-                                const deskDisplay = document.getElementById('selectedDeskDisplay');
-                                if (deskDisplay) deskDisplay.value = '';
-                            } else {
-                                selectedDesk = desk.id;
-                                const deskDisplay = document.getElementById('selectedDeskDisplay');
-                                if (deskDisplay) deskDisplay.value = `Platz ${desk.id}`;
-                            }
-                            renderRoomPlan();
-                        }
-                    };
-
-                    container.appendChild(btn);
-                });
-            }
-        }
-
-        function renderAdminDaySummary() {
-            const tbody = document.getElementById('adminDaySummaryTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            const selDate = adminDateSelect.value;
-            adminDaySummaryTitle.textContent = `Schichtplan für den ${formatDateDE(selDate)}`;
-
-            const dayBookings = bookings.filter(b => b.date === selDate);
-
-            if (dayBookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${settings.deskBookingEnabled ? 6 : 5}" class="p-3 text-center text-slate-400">An diesem Tag sind keine Schichten eingetragen.</td></tr>`;
-                return;
-            }
-
-            dayBookings.sort((a, b) => a.start.localeCompare(b.start));
-            const fragment = document.createDocumentFragment();
-
-            dayBookings.forEach(b => {
-                const globalIndex = bookings.indexOf(b);
-                const tr = document.createElement('tr');
-                tr.className = 'border-b hover:bg-slate-50';
-                let deskCell = settings.deskBookingEnabled ? `<td class="p-2 sm:p-3 font-bold text-blue-600">${b.desk || '-'}</td>` : '';
-                let typeCell = `<td class="p-2 sm:p-3 font-semibold ${b.isHO ? 'text-purple-600' : 'text-slate-700'}">${b.isHO ? 'HO' : 'Büro'}</td>`;
-                tr.innerHTML = `
-                    <td class="p-2 sm:p-3 font-semibold text-slate-800">${escapeHTML(b.name)}</td>
-                    ${deskCell}
-                    ${typeCell}
-                    <td class="p-2 sm:p-3">ab ${b.start} Uhr</td>
-                    <td class="p-2 sm:p-3">${b.breakTime || '0 Minuten'}</td>
-                    <td class="p-2 sm:p-3 flex gap-1 items-center">
-                        <button type="button" onclick="openAdminMoveModal(${globalIndex})" class="text-blue-600 hover:text-blue-800 font-medium text-xs bg-blue-50 px-2 py-1 rounded border border-blue-200">Bearbeiten</button>
-                        <button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2 py-1 rounded border border-red-200">Löschen</button>
-                    </td>
-                `;
-                fragment.appendChild(tr);
-            });
-            tbody.appendChild(fragment);
-        }
-
-        function renderMyBookings() {
-            const tbody = document.getElementById('myBookingsTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            const myBookings = bookings.filter(b => b.name.toLowerCase() === currentUser.toLowerCase());
-
-            if (myBookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${settings.deskBookingEnabled ? 6 : 5}" class="p-4 text-center text-slate-400">Sie haben derzeit keine Schichten eingetragen.</td></tr>`;
-                return;
-            }
-
-            myBookings.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
-            const fragment = document.createDocumentFragment();
-
-            myBookings.forEach((b) => {
-                const globalIndex = bookings.indexOf(b);
-                const tr = document.createElement('tr');
-                tr.className = 'border-b hover:bg-slate-50';
-                let deskCell = settings.deskBookingEnabled ? `<td class="p-3 font-semibold text-blue-600">${b.desk || '-'}</td>` : '';
-                let typeCell = `<td class="p-3 font-semibold ${b.isHO ? 'text-purple-600' : 'text-slate-700'}">${b.isHO ? 'HO' : 'Büro'}</td>`;
-                tr.innerHTML = `
-                    ${deskCell}
-                    ${typeCell}
-                    <td class="p-3">${formatDateDE(b.date)}</td>
-                    <td class="p-3">ab ${b.start} Uhr</td>
-                    <td class="p-3">${b.breakTime || '0 Minuten'}</td>
-                    <td class="p-3 flex gap-2 items-center">
-                        <button type="button" onclick="openUserEditBookingModal(${globalIndex})" class="text-blue-600 hover:text-blue-800 font-medium text-xs bg-blue-50 px-2.5 py-1 rounded border border-blue-200">Ändern</button>
-                        <button type="button" onclick="confirmAndDeleteBooking(${globalIndex})" class="text-red-500 hover:text-red-700 font-medium text-xs bg-red-50 px-2.5 py-1 rounded border border-red-200">Löschen</button>
-                    </td>
-                `;
-                fragment.appendChild(tr);
-            });
-            tbody.appendChild(fragment);
-        }
-
-        function renderBookings() {
-            const tbody = document.getElementById('bookingsTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            const selectedDateStr = userViewDateSelect.value || new Date().toISOString().split('T')[0];
-            const titleEl = document.getElementById('userDailyPlanTitle');
-            if (titleEl) titleEl.textContent = `Tagesschichtplan insgesamt (${formatDateDE(selectedDateStr)})`;
-
-            const filteredBookings = bookings.filter(b => b.date === selectedDateStr);
-
-            if (filteredBookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${settings.deskBookingEnabled ? 6 : 5}" class="p-4 text-center text-slate-400">Für dieses Datum sind keine Schichten eingetragen.</td></tr>`;
-                return;
-            }
-
-            filteredBookings.sort((a, b) => a.start.localeCompare(b.start));
-            const fragment = document.createDocumentFragment();
-
-            filteredBookings.forEach((b) => {
-                const tr = document.createElement('tr');
-                tr.className = 'border-b hover:bg-slate-50';
-                let deskCell = settings.deskBookingEnabled ? `<td class="p-2 sm:p-3 font-semibold text-blue-600">${b.desk || '-'}</td>` : '';
-                let typeCell = `<td class="p-2 sm:p-3 font-semibold ${b.isHO ? 'text-purple-600' : 'text-slate-700'}">${b.isHO ? 'HO' : 'Büro'}</td>`;
-                tr.innerHTML = `
-                    ${deskCell}
-                    <td class="p-2 sm:p-3 font-medium">${escapeHTML(b.name)}</td>
-                    ${typeCell}
-                    <td class="p-2 sm:p-3">${formatDateDE(b.date)}</td>
-                    <td class="p-2 sm:p-3">ab ${b.start} Uhr</td>
-                    <td class="p-2 sm:p-3">${b.breakTime || '0 Minuten'}</td>
-                `;
-                fragment.appendChild(tr);
-            });
-            tbody.appendChild(fragment);
-        }
-
-        async function confirmAndDeleteBooking(index) {
-            if (!currentUser) {
-                alert('Bitte melde dich zuerst an.');
-                return;
-            }
-            const booking = bookings[index];
-            if (!booking) {
-                alert('Diese Schicht wurde nicht gefunden.');
-                return;
-            }
-            if (!isAdmin && String(booking.name || '').toLowerCase() !== String(currentUser).toLowerCase()) {
-                alert('Du darfst nur deine eigenen Schichten löschen.');
-                return;
-            }
-
-            if (!checkLeadTimeOrAlert(booking.date)) return;
-
-            const confirmDelete = confirm(`Wollen Sie die Schicht von "${booking.name}" am ${formatDateDE(booking.date)} wirklich löschen?`);
-            if (!confirmDelete) return;
-
-            bookings.splice(index, 1);
-            await saveCloudData("bookings", bookings);
-            renderBookings();
-            renderMyBookings();
-            if (settings.deskBookingEnabled) renderRoomPlan();
-            if (isAdmin) {
-                renderAdminDaySummary();
-                if (currentActiveUserForModal) {
-                    adminViewUserBookings(currentActiveUserForModal);
-                }
-            }
-        }
-        window.confirmAndDeleteBooking = confirmAndDeleteBooking;
-
-        const bookingDateInput = document.getElementById('bookingDate');
-        if (bookingDateInput) {
-            bookingDateInput.addEventListener('change', () => {
-                if (settings.deskBookingEnabled) renderRoomPlan();
-            });
-        }
-
-        const bookingForm = document.getElementById('bookingForm');
-        if (bookingForm) {
-            bookingForm.onsubmit = async (e) => {
-                e.preventDefault();
-
-                const name = currentUser;
-                const date = document.getElementById('bookingDate').value;
-                const start = document.getElementById('startTime').value;
-                const breakTime = document.getElementById('breakTime').value;
-                const isHO = document.getElementById('bookingIsHO').checked;
-                const desk = (settings.deskBookingEnabled && !isHO) ? (selectedDesk || "") : "";
-
-                if (!checkLeadTimeOrAlert(date)) return;
-
-                const dayCount = bookings.filter(b => b.date === date).length;
-                if (dayCount >= 16) {
-                    alert("Für diesen Tag sind bereits maximal 16 Schichten eingetragen.");
-                    return;
-                }
-
-                const alreadyBooked = bookings.find(b => b.name.toLowerCase() === name.toLowerCase() && b.date === date);
-                if (alreadyBooked) {
-                    alert(`Sie haben für den ${formatDateDE(date)} bereits eine Schicht eingetragen.`);
-                    return;
-                }
-
-                if (settings.deskBookingEnabled && desk && !isHO && getBookingForDesk(desk, date)) {
-                    alert('Dieser Platz ist an diesem Tag bereits belegt.');
-                    return;
-                }
-
-                const newBooking = { desk, name, date, start, breakTime, isHO };
-                bookings.push(newBooking);
-
-                await saveCloudData("bookings", bookings);
-
-                renderBookings();
-                renderMyBookings();
-                if (isAdmin) {
-                    renderAdminDaySummary();
-                    if (currentActiveUserForModal) {
-                        adminViewUserBookings(currentActiveUserForModal);
-                    }
-                }
-                
-                selectedDesk = null;
-                const deskDisplay = document.getElementById('selectedDeskDisplay');
-                if (deskDisplay) deskDisplay.value = '';
-                document.getElementById('bookingIsHO').checked = false;
-                document.getElementById('breakTime').value = '';
-                if (settings.deskBookingEnabled) renderRoomPlan();
-
-                alert('Schicht erfolgreich eingetragen!');
-                
-                // Direkt auf den zweiten Reiter (Meine Schichten) springen
-                switchUserTab('myBookings');
-            };
-        }
-
-        const today = getLocalDateISO();
-        if (bookingDateInput) bookingDateInput.value = today;
-        adminDateSelect.value = today;
-        userViewDateSelect.value = today;
-
-        populateSelects();
-        setupCloudSync();
-    </script>
+    <div id="plan-tbl"></div>
+  </section>
+
+  <section id="t-users" class="card hidden">
+    <h2 class="font-bold text-lg">Mitarbeiter</h2>
+    <form id="uform" class="flex flex-wrap gap-2">
+      <input id="u-name" placeholder="Vorname / Benutzername" required class="inp !w-auto flex-1">
+      <input id="u-pw" placeholder="Start-Passwort" required class="inp !w-auto flex-1">
+      <button class="btn">Anlegen</button>
+    </form>
+    <div id="ulist"></div>
+  </section>
+
+  <section id="t-set" class="card hidden">
+    <h2 class="font-bold text-lg">Einstellungen</h2>
+    <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="desktog" class="w-4 h-4"> Platzwahl (P1–P16) aktivieren</label>
+  </section>
+</div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {getFirestore,doc,collection,setDoc,onSnapshot,runTransaction,writeBatch} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const db=getFirestore(initializeApp({
+  apiKey:"AIzaSyD_1D3R8gywh07q-FZ55HL9lcxNgtd5FJM",
+  authDomain:"arbeitsplatzbuchung-a0f93.firebaseapp.com",
+  projectId:"arbeitsplatzbuchung-a0f93",
+  storageBucket:"arbeitsplatzbuchung-a0f93.firebasestorage.app",
+  messagingSenderId:"527612842869",
+  appId:"1:527612842869:web:fc5559629841724321b93c"
+}));
+
+const $=id=>document.getElementById(id);
+const MAX=16, D=Array.from({length:MAX},(_,i)=>'P'+(i+1));
+let me=localStorage.getItem('sp_user'), users=[], shifts=[], settings={desks:false}, editId=null, tab='form';
+const ready={u:0,s:0,c:0};
+
+const isAdmin=()=>!!me&&me.toLowerCase()==='admin';
+const same=(a,b)=>String(a).toLowerCase()===String(b).toLowerCase();
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=()=>iso(new Date());
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const validName=n=>/^[\p{L}\p{N}._-]{1,40}$/u.test(n||'');
+const NAME_MSG='Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten.';
+const sid=(date,name)=>`${date}_${name.toLowerCase()}`;
+const lockId=(date,desk)=>`${date}_${desk}`;
+const fmt=s=>{if(!s)return '';const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});};
+const leadOk=s=>{if(isAdmin())return true;const[y,m,d]=s.split('-').map(Number);return new Date()<=new Date(y,m-1,d-1,14,0,0);};
+const leadAlert=()=>alert('Änderungen sind für diesen Tag nur bis 14:00 Uhr des Vortages möglich. Bitte wende dich an den Overhead.');
+const run=async f=>{try{await f();return true;}catch(e){alert(e.message||'Speichern fehlgeschlagen.');return false;}};
+
+// Auswahllisten
+$('f-start').innerHTML='<option value="">Uhrzeit wählen</option>'+Array.from({length:13},(_,i)=>{const t=`${pad(11+Math.floor(i/2))}:${i%2?'30':'00'}`;return `<option value="${t}">${t} Uhr</option>`;}).join('');
+$('f-break').innerHTML='<option value="">Pause wählen</option>'+[0,15,30,45,60,75,90].map(m=>`<option>${m} Minuten</option>`).join('');
+
+// Live-Daten: Benutzer, Schichten (je Schicht ein Dokument), Einstellungen
+const fail=e=>{$('load').classList.remove('hidden');$('load').textContent='Verbindung zur Datenbank fehlgeschlagen: '+e.message;};
+onSnapshot(collection(db,'users'),s=>{users=s.docs.map(d=>d.data());ready.u=1;render();},fail);
+onSnapshot(collection(db,'shifts'),s=>{shifts=s.docs.map(d=>({...d.data(),id:d.id}));ready.s=1;render();},fail);
+onSnapshot(doc(db,'settings','main'),s=>{settings=s.exists()?s.data():{desks:false};ready.c=1;render();},fail);
+
+// Anmeldung
+$('authForm').onsubmit=async e=>{
+  e.preventDefault();
+  const n=$('au').value.trim(), p=$('ap').value;
+  if(!validName(n))return alert(NAME_MSG);
+  let u=users.find(x=>same(x.username,n));
+  if(!u&&same(n,'admin')){
+    if(p.length<8)return alert('Erster Start: Bitte ein Admin-Passwort mit mindestens 8 Zeichen wählen.');
+    if(!confirm('Es gibt noch kein Admin-Konto. Mit diesem Passwort anlegen?'))return;
+    u={username:'Admin',password:p};
+    if(!await run(()=>setDoc(doc(db,'users','admin'),u)))return;
+  }
+  if(!u||u.password!==p)return alert('Ungültige Anmeldedaten.');
+  me=u.username;localStorage.setItem('sp_user',me);
+  $('au').value='';$('ap').value='';tab='form';render();
+};
+$('logout').onclick=()=>{me=null;localStorage.removeItem('sp_user');resetForm();render();};
+
+// Anzeige
+function render(){
+  if(!(ready.u&&ready.s&&ready.c))return;
+  $('load').classList.add('hidden');
+  if(me&&!users.some(u=>same(u.username,me))){me=null;localStorage.removeItem('sp_user');}
+  $('auth').classList.toggle('hidden',!!me);
+  $('app').classList.toggle('hidden',!me);
+  if(!me)return;
+  $('who').textContent=me;
+  $('f-user-w').classList.toggle('hidden',!isAdmin());
+  $('desktog').checked=!!settings.desks;
+  fillUsers();tabs();renderForm();renderPlan();renderMine();renderUsers();
+}
+
+function tabs(){
+  const t=isAdmin()?[['form','Schicht eintragen'],['plan','Tagesplan'],['users','Mitarbeiter'],['set','Einstellungen']]
+                   :[['form','Schicht eintragen'],['mine','Meine Schichten'],['plan','Tagesplan']];
+  if(!t.some(x=>x[0]===tab))tab='form';
+  $('tabs').innerHTML=t.map(([k,l])=>`<button data-tab="${k}" class="btn2 !px-3 !py-2 ${k===tab?'!bg-blue-600 !text-white':''}">${l}</button>`).join('');
+  ['form','mine','plan','users','set'].forEach(k=>$('t-'+k).classList.toggle('hidden',k!==tab));
+}
+
+function fillUsers(){
+  const v=$('f-user').value;
+  $('f-user').innerHTML='<option value="">Mitarbeiter wählen</option>'+users.filter(u=>!same(u.username,'admin')).map(u=>`<option>${esc(u.username)}</option>`).join('');
+  $('f-user').value=v;
+}
+
+function renderForm(){
+  const date=$('f-date').value, on=settings.desks&&!$('f-ho').checked;
+  $('f-desk-w').classList.toggle('hidden',!on);
+  if(!on)return;
+  const taken={};
+  shifts.filter(s=>s.date===date&&s.desk&&s.id!==editId).forEach(s=>taken[s.desk]=s.name);
+  const cur=$('f-desk').value;
+  $('f-desk').innerHTML='<option value="">Kein Platz</option>'+D.filter(d=>!taken[d]).map(d=>`<option ${d===cur?'selected':''}>${d}</option>`).join('');
+  const sel=$('f-desk').value;
+  $('plan').innerHTML=[0,1,2,3].map(i=>`<div class="bg-amber-50 border border-amber-200 rounded-lg p-2"><div class="text-xs text-slate-500 mb-1">Insel ${i+1}</div><div class="grid grid-cols-2 gap-1">`+
+    D.slice(i*4,i*4+4).map(d=>taken[d]
+      ?`<div class="rounded bg-red-500 text-white text-xs p-2 truncate" title="${esc(taken[d])}">${esc(taken[d])}</div>`
+      :`<button type="button" data-desk="${d}" class="rounded border text-xs p-2 ${sel===d?'bg-blue-600 text-white':'bg-white'}">${d}</button>`).join('')+'</div></div>').join('');
+}
+
+function tbl(l,nm,dt){
+  if(!l.length)return '<p class="text-slate-400 text-center p-3 text-sm">Keine Schichten.</p>';
+  const dk=settings.desks;
+  return `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-slate-500 border-b">${nm?'<th>Name</th>':''}${dt?'<th>Datum</th>':''}<th>Typ</th>${dk?'<th>Platz</th>':''}<th>Zeit</th><th>Pause</th><th></th></tr></thead><tbody>`+
+  l.map(s=>{
+    const can=isAdmin()||same(s.name,me);
+    return `<tr class="border-b">${nm?`<td class="font-semibold">${esc(s.name)}</td>`:''}${dt?`<td>${fmt(s.date)}</td>`:''}<td class="font-semibold ${s.isHO?'text-purple-600':''}">${s.isHO?'HO':'Büro'}</td>${dk?`<td>${esc(s.desk||'-')}</td>`:''}<td>ab ${esc(s.start)} Uhr</td><td>${esc(s.breakTime)}</td><td class="whitespace-nowrap">${can?`<button class="btn2" data-edit="${esc(s.id)}">Ändern</button> <button class="btn2 !text-red-600" data-del="${esc(s.id)}">Löschen</button>`:''}</td></tr>`;
+  }).join('')+'</tbody></table></div>';
+}
+
+function renderPlan(){
+  const d=$('p-date').value, l=shifts.filter(s=>s.date===d).sort((a,b)=>a.start.localeCompare(b.start));
+  const o=l.filter(s=>!s.isHO).length;
+  $('p-head').textContent=`${fmt(d)}: Büro ${o}/${MAX}, Homeoffice ${l.length-o}`;
+  $('plan-tbl').innerHTML=tbl(l,true,false);
+  $('csv').classList.toggle('hidden',!isAdmin());
+}
+
+function renderMine(){
+  if(!me)return;
+  $('mine').innerHTML=tbl(shifts.filter(s=>same(s.name,me)).sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start)),false,true);
+}
+
+function renderUsers(){
+  if(!isAdmin())return;
+  const l=users.filter(u=>!same(u.username,'admin'));
+  $('ulist').innerHTML=l.length?'<table class="w-full text-sm"><tbody>'+l.map(u=>`<tr class="border-b"><td class="font-semibold">${esc(u.username)}</td><td class="text-right whitespace-nowrap"><button class="btn2" data-pw="${esc(u.username)}">Passwort ändern</button> <button class="btn2 !text-red-600" data-deluser="${esc(u.username)}">Löschen</button></td></tr>`).join('')+'</tbody></table>':'<p class="text-slate-400 text-sm">Noch keine Mitarbeiter angelegt.</p>';
+}
+
+// Schicht speichern: ein Dokument pro Schicht (Mitarbeiter + Tag), ein Sperr-Dokument pro Platz + Tag
+async function saveShift(sh,old){
+  const id=sid(sh.date,sh.name);
+  await runTransaction(db,async t=>{
+    const ref=doc(db,'shifts',id), cur=await t.get(ref);
+    if(cur.exists()&&(!old||old.id!==id))throw new Error(`${sh.name} hat am ${fmt(sh.date)} bereits eine Schicht.`);
+    let lk=null;
+    if(sh.desk){
+      lk=doc(db,'desks',lockId(sh.date,sh.desk));
+      const l=await t.get(lk);
+      if(l.exists()&&(!old||l.data().shift!==old.id))throw new Error(`Platz ${sh.desk} ist am ${fmt(sh.date)} bereits belegt.`);
+    }
+    if(old){
+      t.delete(doc(db,'shifts',old.id));
+      if(old.desk)t.delete(doc(db,'desks',lockId(old.date,old.desk)));
+    }
+    t.set(ref,sh);
+    if(lk)t.set(lk,{shift:id});
+  });
+}
+
+$('form').onsubmit=async e=>{
+  e.preventDefault();
+  const old=editId?shifts.find(s=>s.id===editId):null;
+  if(editId&&!old)return alert('Diese Schicht existiert nicht mehr.');
+  const name=old?old.name:(isAdmin()?$('f-user').value:me);
+  if(!name)return alert('Bitte einen Mitarbeiter wählen.');
+  const date=$('f-date').value, isHO=$('f-ho').checked;
+  const sh={name,date,start:$('f-start').value,breakTime:$('f-break').value,isHO,desk:(settings.desks&&!isHO)?$('f-desk').value:''};
+  if(!leadOk(date)||(old&&!leadOk(old.date)))return leadAlert();
+  if(!isHO&&shifts.filter(s=>s.date===date&&!s.isHO&&s.id!==editId).length>=MAX)
+    return alert(`Alle ${MAX} Büroplätze sind an diesem Tag vergeben. Homeoffice ist weiterhin möglich.`);
+  if(!await run(()=>saveShift(sh,old)))return;
+  if(isAdmin())$('p-date').value=date;
+  tab=isAdmin()?'plan':'mine';
+  resetForm();render();
+};
+
+function startEdit(id){
+  const s=shifts.find(x=>x.id===id); if(!s)return;
+  if(!leadOk(s.date))return leadAlert();
+  editId=id;
+  $('f-user').value=s.name;$('f-user').disabled=true;
+  $('f-date').value=s.date;$('f-start').value=s.start;$('f-break').value=s.breakTime;$('f-ho').checked=!!s.isHO;
+  renderForm();$('f-desk').value=s.desk||'';renderForm();
+  $('f-title').textContent='Schicht ändern';$('f-submit').textContent='Änderung speichern';$('f-cancel').classList.remove('hidden');
+  tab='form';tabs();
+}
+
+function resetForm(){
+  editId=null;$('form').reset();$('f-user').disabled=false;
+  $('f-date').value=today();
+  $('f-title').textContent='Schicht eintragen';$('f-submit').textContent='Schicht eintragen';$('f-cancel').classList.add('hidden');
+}
+$('f-cancel').onclick=()=>{resetForm();render();};
+
+async function removeShift(id){
+  const s=shifts.find(x=>x.id===id); if(!s)return;
+  if(!isAdmin()&&!same(s.name,me))return alert('Du darfst nur eigene Schichten löschen.');
+  if(!leadOk(s.date))return leadAlert();
+  if(!confirm(`Schicht von ${s.name} am ${fmt(s.date)} löschen?`))return;
+  await run(()=>{
+    const b=writeBatch(db);
+    b.delete(doc(db,'shifts',s.id));
+    if(s.desk)b.delete(doc(db,'desks',lockId(s.date,s.desk)));
+    return b.commit();
+  });
+}
+
+// Mitarbeiterverwaltung (Admin)
+$('uform').onsubmit=async e=>{
+  e.preventDefault();
+  const n=$('u-name').value.trim(), p=$('u-pw').value;
+  if(!validName(n))return alert(NAME_MSG);
+  if(same(n,'admin'))return alert('Der Name "admin" ist reserviert.');
+  if(users.some(u=>same(u.username,n)))return alert('Dieser Benutzername existiert bereits.');
+  if(await run(()=>setDoc(doc(db,'users',n.toLowerCase()),{username:n,password:p})))$('uform').reset();
+};
+
+async function changePw(name){
+  const p=prompt(`Neues Passwort für ${name}:`); if(!p)return;
+  await run(()=>setDoc(doc(db,'users',name.toLowerCase()),{username:name,password:p}));
+}
+
+async function deleteUser(name){
+  if(!confirm(`Benutzer "${name}" und alle seine Schichten löschen?`))return;
+  await run(()=>{
+    const b=writeBatch(db);
+    b.delete(doc(db,'users',name.toLowerCase()));
+    shifts.filter(s=>same(s.name,name)).forEach(s=>{
+      b.delete(doc(db,'shifts',s.id));
+      if(s.desk)b.delete(doc(db,'desks',lockId(s.date,s.desk)));
+    });
+    return b.commit();
+  });
+}
+
+$('desktog').onchange=()=>run(()=>setDoc(doc(db,'settings','main'),{desks:$('desktog').checked}));
+
+// CSV-Export (Admin), öffnet in Excel
+$('csv').onclick=()=>{
+  const d=$('p-date').value, l=shifts.filter(s=>s.date===d).sort((a,b)=>a.start.localeCompare(b.start));
+  if(!l.length)return alert('Für diesen Tag gibt es keine Schichten.');
+  const q=v=>{let t=String(v??'');if(/^\s*[=+\-@]/.test(t))t="'"+t;return `"${t.replace(/"/g,'""')}"`;};
+  const rows=['Mitarbeiter;Platz;Typ;Uhrzeit;Pause;Datum',...l.map(s=>[s.name,s.desk||'-',s.isHO?'HO':'Büro',`ab ${s.start} Uhr`,s.breakTime,fmt(s.date)].map(q).join(';'))];
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+rows.join('\n')],{type:'text/csv;charset=utf-8;'}));
+  a.download=`Schichtplan_${d}.csv`;a.click();URL.revokeObjectURL(a.href);
+};
+
+// Klicks (ein zentraler Handler, keine Namen in onclick-Attributen)
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tab],[data-desk],[data-edit],[data-del],[data-pw],[data-deluser]'); if(!t)return;
+  const d=t.dataset;
+  if(d.tab){tab=d.tab;tabs();}
+  else if(d.desk){$('f-desk').value=d.desk;renderForm();}
+  else if(d.edit)startEdit(d.edit);
+  else if(d.del)removeShift(d.del);
+  else if(d.pw)changePw(d.pw);
+  else if(d.deluser)deleteUser(d.deluser);
+});
+['f-date','f-ho','f-desk'].forEach(id=>$(id).addEventListener('change',renderForm));
+$('p-date').addEventListener('change',renderPlan);
+
+$('f-date').value=today();
+$('p-date').value=today();
+</script>
 </body>
 </html>
