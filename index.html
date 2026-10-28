@@ -43,7 +43,7 @@ th,td{@apply p-2 text-left}
       <div><label class="lbl">Pause</label><select id="f-break" required class="inp"></select></div>
       <div class="flex items-center gap-2"><input type="checkbox" id="f-ho" class="w-4 h-4"><label for="f-ho" class="text-sm font-medium">Homeoffice (zählt nicht zu den 16 Büroplätzen)</label></div>
       
-      <!-- Visueller Raumplan & Platzwahl integriert -->
+      <!-- Visueller Raumplan mit korrekter Raumaufteilung der Inseln -->
       <div id="f-desk-w" class="hidden sm:col-span-2 space-y-2 pt-2 border-t">
         <div class="flex justify-between items-center">
           <label class="lbl !mb-0">Büro-Raumplan (P1–P16) – Klick auf einen freien Platz wählt diesen aus:</label>
@@ -181,7 +181,7 @@ function fillUsers(){
   $('f-user').value=v;
 }
 
-// Visueller Raumplan & Formularpflege
+// Visueller Raumplan mit korrekter Insel-Raumaufteilung (Insel i sliced directly)
 function renderForm(){
   const date=$('f-date').value, on=settings.desks&&!$('f-ho').checked;
   $('f-desk-w').classList.toggle('hidden',!on);
@@ -199,7 +199,7 @@ function renderForm(){
   const sel=$('f-desk').value;
   $('f-desk-selected').textContent = sel ? `Ausgewählt: ${sel}` : 'Kein Platz gewählt';
 
-  // Visuelles 4-Inseln Raster für alle 16 Plätze
+  // Korrekte Raumaufteilung der Inseln (Originales Mapping)
   $('plan-grid').innerHTML=[0,1,2,3].map(i=>`<div class="bg-amber-50 border border-amber-200 rounded-lg p-2"><div class="text-xs text-slate-500 mb-1 font-medium">Insel ${i+1}</div><div class="grid grid-cols-2 gap-1">`+
     D.slice(i*4,i*4+4).map(d=>{
       const occ=taken[d];
