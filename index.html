@@ -43,7 +43,7 @@ th,td{@apply p-2 text-left}
       <div><label class="lbl">Pause</label><select id="f-break" required class="inp"></select></div>
       <div class="flex items-center gap-2"><input type="checkbox" id="f-ho" class="w-4 h-4"><label for="f-ho" class="text-sm font-medium">Homeoffice (zählt nicht zu den 16 Büroplätzen)</label></div>
       
-      <!-- Visueller Raumplan mit exakter Raumaufteilung (Insel-Layout) -->
+      <!-- Visueller Raumplan mit exakter physischer Raumaufteilung -->
       <div id="f-desk-w" class="hidden sm:col-span-2 space-y-2 pt-2 border-t">
         <div class="flex justify-between items-center">
           <label class="lbl !mb-0">Büro-Raumplan (P1–P16) – Klick auf einen freien Platz wählt diesen aus:</label>
@@ -68,7 +68,7 @@ th,td{@apply p-2 text-left}
       <div class="flex gap-2 items-center"><input type="date" id="p-date" class="inp !w-auto"><button id="csv" class="btn2 hidden">CSV-Export</button></div>
     </div>
     
-    <!-- Visueller Raumplan in der Tagesplan-Übersicht -->
+    <!-- Visueller Raumplan in der Tagesansicht -->
     <div id="p-desk-overview-w" class="hidden pt-2 border-t space-y-2">
       <h3 class="font-bold text-sm text-slate-700">Sitzplan-Übersicht für diesen Tag</h3>
       <div id="p-plan-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1"></div>
@@ -178,7 +178,7 @@ function tabs(){
   const t=isAdmin()?[['form','Schicht eintragen'],['plan','Tagesplan'],['users','Mitarbeiter'],['set','Einstellungen']]
                    :[['form','Schicht eintragen'],['mine','Meine Schichten'],['plan','Tagesplan']];
   if(!t.some(x=>x[0]===tab))tab='form';
-  $('tabs').innerHTML=t.map(([k,l])=>`<button data-tab="${k}" class="btn2 !px-3 !py-2 ${k===tab?'!bg-blue-600 !text-white':''}">${l}</button>`).join('');
+  $('tabs').innerHTML=t.map(([k,l])=>`<button data-tab="${k}" class="btn2 !px-3 !py-2 ${k===tab?'!bg-blue-600 !text-white':''}">${l}.</button>`.replace('.,','')).join('');
   ['form','mine','plan','users','set'].forEach(k=>$('t-'+k).classList.toggle('hidden',k!==tab));
 }
 
@@ -188,17 +188,17 @@ function fillUsers(){
   $('f-user').value=v;
 }
 
-// Hilfsfunktion zur Generierung der Schreibtisch-Inseln in exakter Raumaufteilung:
-// Jede Insel (4 Plätze) wird als 2x2 Grid dargestellt:
-// [ Platz 2 (oben links) | Platz 4 (oben rechts) ]
-// [ Platz 1 (unten links)| Platz 3 (unten rechts) ]
+// Exakte Raumaufteilung der Schreibtische pro Insel:
+// Layout pro Insel (2x2 Grid):
+// [ Platz X+4 (oben links)  | Platz X+3 (oben rechts) ]
+// [ Platz X+1 (unten links) | Platz X+2 (unten rechts)]
+// (wobei X = islandIdx * 4)
 function renderIslandHTML(islandIdx, takenMap, interactive, selectedDesk) {
   const base = islandIdx * 4;
-  // Indizes im Array D (0-15): base+1 (unten links), base+3 (oben links), base+0 (unten rechts), base+2 (oben rechts)
   const p1 = D[base + 1]; // unten links
-  const p2 = D[base + 3]; // oben links
-  const p3 = D[base + 0]; // unten rechts
-  const p4 = D[base + 2]; // oben rechts
+  const p2 = D[base + 2]; // unten rechts
+  const p3 = D[base + 3]; // oben rechts
+  const p4 = D[base + 4]; // oben links
 
   const renderDeskCell = (d) => {
     const occ = takenMap[d];
@@ -216,10 +216,10 @@ function renderIslandHTML(islandIdx, takenMap, interactive, selectedDesk) {
     <div class="bg-amber-50 border border-amber-200 rounded-lg p-2">
       <div class="text-xs text-slate-500 mb-1 font-medium">Insel ${islandIdx + 1}</div>
       <div class="grid grid-cols-2 gap-1">
-        ${renderDeskCell(p2)}
         ${renderDeskCell(p4)}
-        ${renderDeskCell(p1)}
         ${renderDeskCell(p3)}
+        ${renderDeskCell(p1)}
+        ${renderDeskCell(p2)}
       </div>
     </div>
   `;
@@ -261,7 +261,6 @@ function renderPlan(){
   const o=l.filter(s=>!s.isHO).length;
   $('p-head').textContent=`${fmt(d)}: Büro ${o}/${MAX}, Homeoffice ${l.length-o}`;
   
-  // Raumplan in der Tagesansicht einblenden, falls Platzwahl aktiv
   const showDeskOverview = settings.desks;
   $('p-desk-overview-w').classList.toggle('hidden', !showDeskOverview);
   if(showDeskOverview) {
@@ -279,7 +278,7 @@ function renderMine(){
   $('mine').innerHTML=tbl(shifts.filter(s=>same(s.name,me)).sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start)),false,true,true);
 }
 
-// Mitarbeiterverwaltung mit erweiterter Detailansicht
+// Mitarbeiterverwaltung
 function renderUsers(){
   if(!isAdmin())return;
   const l=users.filter(u=>!same(u.username,'admin'));
