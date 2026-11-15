@@ -1,7 +1,7 @@
 // Service Worker: macht die Web-App installierbar und zeigt die Seite
 // auch kurz ohne Internet an. Daten (Firebase) werden NICHT zwischengespeichert,
 // damit immer der aktuelle Schichtplan angezeigt wird.
-const CACHE = 'schichtplanung-v1';
+const CACHE = 'schichtplanung-v2';
 const FILES = ['./', './index.html', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
