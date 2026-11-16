@@ -231,16 +231,16 @@ function renderIslandHTML(islandIdx, takenMap, interactive, selectedDesk) {
 // Raumplan in L-Form (3 Spalten), mit Orientierungshinweisen:
 //   Overhead   |          |
 //   Insel 2    | Insel 3  | Insel 4
-//   Insel 1    | Eingang  |
+//   Insel 1    | Eingang  | Coaching-Raum
 //   Büro Leitung|          |
-const roomHint=(t,cls='')=>`<div class="flex items-center justify-center text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-slate-500 ${cls}">${t}</div>`;
+const roomHint=(t,cls='')=>`<div class="flex items-center justify-center text-center text-[10px] sm:text-xs font-semibold text-slate-500 ${cls}">${t}</div>`;
 const roomEmpty='<div></div>';
 function renderRoomHTML(taken, interactive, sel){
   const isl=i=>renderIslandHTML(i, taken, interactive, sel);
   return [
     roomHint('Overhead','pb-0.5'), roomEmpty, roomEmpty,
     isl(1), isl(2), isl(3),
-    isl(0), roomHint('Eingang'), roomEmpty,
+    isl(0), roomHint('Eingang'), roomHint('Coaching-Raum'),
     roomHint('Büro Leitung','pt-0.5'), roomEmpty, roomEmpty
   ].join('');
 }
