@@ -49,7 +49,8 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **Raumplan in L-Form** (wie im echten Büro): oben Insel 2, 3, 4 nebeneinander, darunter
   links Insel 1. Gilt auch auf dem Handy im Hochformat (immer 3 Spalten, kompakte Plätze).
   Orientierungshinweise (nur Text): „Overhead“ über Insel 2, „Eingang“ rechts neben
-  Insel 1, „Büro Leitung“ (zwei Wörter) unter Insel 1 (Funktion `renderRoomHTML`).
+  Insel 1, „Coaching-Raum“ rechts neben dem Eingang (unter Insel 4), „Büro Leitung“ (zwei Wörter) unter Insel 1 (Funktion `renderRoomHTML`).
+  Hinweise in normaler Groß-/Kleinschreibung, nicht in Großbuchstaben.
 - Datumsfelder (Formular + Tagesplan) haben ‹ › zum Springen um einen **Werktag**
   (Wochenenden werden übersprungen); Tagesplan zusätzlich „Heute“.
 - Schicht-Beginn 11:00–17:00 Uhr in 30-Minuten-Schritten, Pause 0–90 Minuten.
@@ -73,6 +74,7 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **16.11.2026:** Vor-/Zurück-Pfeile an den Datumsfeldern, „Heute“ im Tagesplan – PR #7.
 - **16.11.2026:** Raumplan-Hinweise Overhead / Eingang / Büroleitung – PR #8.
 - **16.11.2026:** Hinweis in „Büro Leitung“ (zwei Wörter) geändert – PR #9.
+- **16.11.2026:** Hinweis „Coaching-Raum“ ergänzt, normale Schreibweise statt Großbuchstaben – PR #10.
 
 ## Offene Ideen / nächste Schritte
 
