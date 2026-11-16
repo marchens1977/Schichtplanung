@@ -48,6 +48,8 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **16 Büroplätze** (P1–P16, 4 Inseln à 4 Plätze). Homeoffice zählt nicht.
 - **Raumplan in L-Form** (wie im echten Büro): oben Insel 2, 3, 4 nebeneinander, darunter
   links Insel 1. Gilt auch auf dem Handy im Hochformat (immer 3 Spalten, kompakte Plätze).
+  Orientierungshinweise (nur Text): „Overhead“ über Insel 2, „Eingang“ rechts neben
+  Insel 1, „Büroleitung“ unter Insel 1 (Funktion `renderRoomHTML`).
 - Datumsfelder (Formular + Tagesplan) haben ‹ › zum Springen um einen **Werktag**
   (Wochenenden werden übersprungen); Tagesplan zusätzlich „Heute“.
 - Schicht-Beginn 11:00–17:00 Uhr in 30-Minuten-Schritten, Pause 0–90 Minuten.
@@ -69,6 +71,7 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **16.11.2026:** Dieses Tagebuch angelegt – PR #5.
 - **16.11.2026:** Raumplan zeigt die L-Form jetzt auch auf dem Handy – PR #6.
 - **16.11.2026:** Vor-/Zurück-Pfeile an den Datumsfeldern, „Heute“ im Tagesplan – PR #7.
+- **16.11.2026:** Raumplan-Hinweise Overhead / Eingang / Büroleitung – PR #8.
 
 ## Offene Ideen / nächste Schritte
 
