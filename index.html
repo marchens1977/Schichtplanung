@@ -228,12 +228,22 @@ function renderIslandHTML(islandIdx, takenMap, interactive, selectedDesk) {
   `;
 }
 
-// Array für die physische L-Form:
-// Index 1 (Insel 2) -> Oben Links
-// Index 2 (Insel 3) -> Oben Mitte
-// Index 3 (Insel 4) -> Oben Rechts
-// Index 0 (Insel 1) -> Unten Links
-const islandOrder = [1, 2, 3, 0];
+// Raumplan in L-Form (3 Spalten), mit Orientierungshinweisen:
+//   Overhead   |          |
+//   Insel 2    | Insel 3  | Insel 4
+//   Insel 1    | Eingang  |
+//   Büroleitung|          |
+const roomHint=(t,cls='')=>`<div class="flex items-center justify-center text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wide text-slate-500 ${cls}">${t}</div>`;
+const roomEmpty='<div></div>';
+function renderRoomHTML(taken, interactive, sel){
+  const isl=i=>renderIslandHTML(i, taken, interactive, sel);
+  return [
+    roomHint('Overhead','pb-0.5'), roomEmpty, roomEmpty,
+    isl(1), isl(2), isl(3),
+    isl(0), roomHint('Eingang'), roomEmpty,
+    roomHint('Büroleitung','pt-0.5'), roomEmpty, roomEmpty
+  ].join('');
+}
 
 // Visueller Raumplan im Formular
 function renderForm(){
@@ -253,7 +263,7 @@ function renderForm(){
   const sel=$('f-desk').value;
   $('f-desk-selected').textContent = sel ? `Ausgewählt: ${sel}` : 'Kein Platz gewählt';
 
-  $('plan-grid').innerHTML = islandOrder.map(i => renderIslandHTML(i, taken, true, sel)).join('');
+  $('plan-grid').innerHTML = renderRoomHTML(taken, true, sel);
 }
 
 function tbl(l,nm,dt,act){
@@ -277,7 +287,7 @@ function renderPlan(){
   if(showDeskOverview) {
     const taken={};
     l.filter(s=>s.desk).forEach(s=>taken[s.desk]=s.name);
-    $('p-plan-grid').innerHTML = islandOrder.map(i => renderIslandHTML(i, taken, false, null)).join('');
+    $('p-plan-grid').innerHTML = renderRoomHTML(taken, false, null);
   }
 
   $('plan-tbl').innerHTML=tbl(l,true,false,isAdmin());
