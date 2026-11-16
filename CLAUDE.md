@@ -45,7 +45,9 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - Mitarbeiter dürfen Schichten nur bis **14:00 Uhr am Vortag** anlegen/ändern/löschen;
   der Admin darf immer.
 - Pro Mitarbeiter **eine Schicht pro Tag**.
-- **16 Büroplätze** (P1–P16, 4 Inseln à 4 Plätze, L-Form-Anordnung). Homeoffice zählt nicht.
+- **16 Büroplätze** (P1–P16, 4 Inseln à 4 Plätze). Homeoffice zählt nicht.
+- **Raumplan in L-Form** (wie im echten Büro): oben Insel 2, 3, 4 nebeneinander, darunter
+  links Insel 1. Gilt auch auf dem Handy im Hochformat (immer 3 Spalten, kompakte Plätze).
 - Schicht-Beginn 11:00–17:00 Uhr in 30-Minuten-Schritten, Pause 0–90 Minuten.
 - Benutzer `admin` ist reserviert; beim allerersten Start wird das Admin-Konto angelegt
   (Passwort min. 8 Zeichen). Nur der Admin sieht Mitarbeiterverwaltung, Einstellungen, CSV-Export.
@@ -62,7 +64,8 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **16.11.2026:** Code-Prüfung, 9 Schwachstellen behoben (Transaktion beim Ändern,
   Prüfreihenfolge im Formular, Absturzschutz Sortierung, Benutzernamen-Regel,
   Admin-Erststart, leere Passwörter u. a.) – PR #4.
-- **16.11.2026:** Dieses Tagebuch angelegt.
+- **16.11.2026:** Dieses Tagebuch angelegt – PR #5.
+- **16.11.2026:** Raumplan zeigt die L-Form jetzt auch auf dem Handy – PR #6.
 
 ## Offene Ideen / nächste Schritte
 

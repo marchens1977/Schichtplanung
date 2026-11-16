@@ -52,13 +52,13 @@ th,td{@apply p-2 text-left}
       
       <!-- Formular: Raumplan (L-Form Layout) -->
       <div id="f-desk-w" class="hidden sm:col-span-2 space-y-2 pt-2 border-t">
-        <div class="flex justify-between items-center">
+        <div class="flex flex-wrap justify-between items-center gap-1">
           <label class="lbl !mb-0">Büro-Raumplan (P1–P16) – Klick auf einen freien Platz wählt diesen aus:</label>
           <span id="f-desk-selected" class="text-xs font-semibold text-blue-600">Kein Platz gewählt</span>
         </div>
         <input type="hidden" id="f-desk">
         <!-- 3 Spalten Grid für das L-Form Layout der Inseln -->
-        <div id="plan-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1"></div>
+        <div id="plan-grid" class="grid grid-cols-3 gap-1.5 sm:gap-3 pt-1"></div>
       </div>
 
       <div class="sm:col-span-2 flex gap-2 pt-2">
@@ -80,7 +80,7 @@ th,td{@apply p-2 text-left}
     <div id="p-desk-overview-w" class="hidden pt-2 pb-1 border-t space-y-2">
       <h3 class="font-bold text-sm text-slate-700">Sitzplan-Übersicht für diesen Tag</h3>
       <!-- 3 Spalten Grid für das L-Form Layout der Inseln -->
-      <div id="p-plan-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1"></div>
+      <div id="p-plan-grid" class="grid grid-cols-3 gap-1.5 sm:gap-3 pt-1"></div>
     </div>
 
     <div id="plan-tbl" class="pt-2"></div>
@@ -208,19 +208,19 @@ function renderIslandHTML(islandIdx, takenMap, interactive, selectedDesk) {
   const renderDeskCell = (d) => {
     const occ = takenMap[d];
     if (occ) {
-      return `<div class="rounded bg-red-500 text-white text-xs p-2 text-center cursor-not-allowed flex flex-col justify-center min-h-[48px]" title="Belegt von: ${esc(occ)}"><span class="font-bold">${d}</span><span class="text-[10px] opacity-90 truncate leading-tight mt-0.5">${esc(occ)}</span></div>`;
+      return `<div class="rounded bg-red-500 text-white text-[11px] sm:text-xs px-0.5 py-1 sm:p-2 text-center cursor-not-allowed flex flex-col justify-center min-h-[44px] sm:min-h-[48px] min-w-0" title="Belegt von: ${esc(occ)}"><span class="font-bold">${d}</span><span class="text-[9px] sm:text-[10px] opacity-90 truncate leading-tight mt-0.5">${esc(occ)}</span></div>`;
     }
     if (!interactive) {
-      return `<div class="rounded bg-slate-50 border border-slate-200 text-slate-400 text-xs p-2 text-center flex flex-col justify-center min-h-[48px]"><span class="font-bold">${d}</span><span class="text-[10px] mt-0.5">-</span></div>`;
+      return `<div class="rounded bg-slate-50 border border-slate-200 text-slate-400 text-[11px] sm:text-xs px-0.5 py-1 sm:p-2 text-center flex flex-col justify-center min-h-[44px] sm:min-h-[48px] min-w-0"><span class="font-bold">${d}</span><span class="text-[10px] mt-0.5">-</span></div>`;
     }
     const isSel = selectedDesk === d;
-    return `<button type="button" data-desk="${d}" class="rounded border text-xs p-2 text-center transition-colors min-h-[48px] ${isSel?'bg-blue-600 text-white font-bold border-blue-600 shadow-inner':'bg-white hover:bg-slate-50 text-slate-700 font-medium'}">${d}</button>`;
+    return `<button type="button" data-desk="${d}" class="rounded border text-[11px] sm:text-xs px-0.5 py-1 sm:p-2 text-center transition-colors min-h-[44px] sm:min-h-[48px] min-w-0 ${isSel?'bg-blue-600 text-white font-bold border-blue-600 shadow-inner':'bg-white hover:bg-slate-50 text-slate-700 font-medium'}">${d}</button>`;
   };
 
   return `
-    <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 shadow-sm">
-      <div class="text-xs text-slate-600 mb-2 font-bold tracking-wide">INSEL ${islandIdx + 1}</div>
-      <div class="grid grid-cols-2 gap-2">
+    <div class="bg-amber-50 border border-amber-200 rounded-lg sm:rounded-xl p-1 sm:p-2.5 shadow-sm">
+      <div class="text-[10px] sm:text-xs text-slate-600 mb-1 sm:mb-2 font-bold tracking-wide text-center sm:text-left">INSEL ${islandIdx + 1}</div>
+      <div class="grid grid-cols-2 gap-1 sm:gap-2">
         ${desks.map(renderDeskCell).join('')}
       </div>
     </div>
