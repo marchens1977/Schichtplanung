@@ -85,6 +85,24 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 
 ## Offene Ideen / nächste Schritte
 
-- **Stufe 2 – Sicherheit:** Passwörter liegen im Klartext in Firestore, und jeder mit
-  Kenntnissen kann Daten lesen/ändern. Lösung: Firebase Authentication + Firestore-
-  Sicherheitsregeln. Erst angehen, wenn der Nutzer das möchte.
+- **Stufe 2 – Sicherheit (vom Nutzer gewünscht, Termin offen):** Passwörter liegen im
+  Klartext in Firestore, und jeder mit Kenntnissen kann Daten lesen/ändern. Beschlossener Plan
+  (Variante a), **ohne Blaze-Tarif / ohne Kreditkarte**:
+  - Firebase Authentication (E-Mail/Passwort mit künstlichen Adressen aus dem Benutzernamen,
+    keine echten E-Mails speichern) + Firestore-Sicherheitsregeln je Rolle.
+  - Admin legt Mitarbeiter an; App erzeugt **zufälliges Start-Kennwort**, zeigt es einmal an.
+    Neues Konto über zweite App-Instanz anlegen, damit der Admin angemeldet bleibt.
+  - Beim ersten Login **Pflicht zum Passwortwechsel** (Mindestlänge ca. 10 Zeichen).
+    Danach ändert der Mitarbeiter sein Passwort selbst; Admin sieht keine Passwörter mehr.
+    (Damit entfällt die alte Regel „nur Admin vergibt Passwörter“.)
+  - Passwort vergessen: Admin löscht das Konto in der Firebase-Konsole und legt es neu an.
+  - Alle Konten werden neu angelegt; Stufe 2 möglichst **vor** Verteilung an Testkollegen.
+  - Der Nutzer erledigt seinen Teil in der Firebase-Konsole am **Raspberry Pi 400** (Chromium),
+    nicht am Handy. Anleitung Schritt für Schritt, zum Kopieren.
+  - Region der Firestore-Datenbank prüfen (Ziel: EU / Frankfurt).
+- **Kosten/Freimengen:** Alles läuft kostenlos (GitHub Pages, Firebase Spark). Die App lädt
+  derzeit *alle* Schichten → Lesevorgänge wachsen mit der Zeit. Mit Stufe 2 umsetzen:
+  nur Schichten ab heute (bzw. Admin: Zeitraum) laden und alte Schichten nach einer Frist
+  automatisch löschen (Löschkonzept für den Datenschutz).
+- **Datenschutz:** Kurzbeschreibung für den Datenschutzbeauftragten liegt als Claude-Doc vor
+  (Titel „Schichtplanung – Kurzbeschreibung für den Datenschutz“). Gespräch steht noch aus.
