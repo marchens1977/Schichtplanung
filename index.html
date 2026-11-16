@@ -45,7 +45,7 @@ th,td{@apply p-2 text-left}
     <h2 id="f-title" class="font-bold text-lg">Schicht eintragen</h2>
     <form id="form" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div id="f-user-w" class="hidden"><label class="lbl">Mitarbeiter</label><select id="f-user" class="inp"></select></div>
-      <div><label class="lbl">Datum</label><input type="date" id="f-date" required class="inp"></div>
+      <div><label class="lbl">Datum</label><div class="flex gap-1.5 items-stretch"><button type="button" data-day="f-date" data-dir="-1" class="btn2 !px-3 !py-2 !text-base leading-none" aria-label="Vorheriger Werktag" title="Vorheriger Werktag">‹</button><input type="date" id="f-date" required class="inp min-w-0 flex-1"><button type="button" data-day="f-date" data-dir="1" class="btn2 !px-3 !py-2 !text-base leading-none" aria-label="Nächster Werktag" title="Nächster Werktag">›</button></div></div>
       <div><label class="lbl">Schicht ab</label><select id="f-start" required class="inp"></select></div>
       <div><label class="lbl">Pause</label><select id="f-break" required class="inp"></select></div>
       <div class="flex items-center gap-2"><input type="checkbox" id="f-ho" class="w-4 h-4"><label for="f-ho" class="text-sm font-medium">Homeoffice (zählt nicht zu den 16 Büroplätzen)</label></div>
@@ -73,7 +73,7 @@ th,td{@apply p-2 text-left}
   <section id="t-plan" class="card hidden">
     <div class="flex flex-wrap justify-between items-center gap-2">
       <h2 id="p-head" class="font-bold text-lg"></h2>
-      <div class="flex gap-2 items-center"><input type="date" id="p-date" class="inp !w-auto"><button id="csv" class="btn2 hidden">CSV-Export</button></div>
+      <div class="flex flex-wrap gap-1.5 items-stretch"><button type="button" data-day="p-date" data-dir="-1" class="btn2 !px-3 !py-2 !text-base leading-none" aria-label="Vorheriger Werktag" title="Vorheriger Werktag">‹</button><input type="date" id="p-date" class="inp !w-auto"><button type="button" data-day="p-date" data-dir="1" class="btn2 !px-3 !py-2 !text-base leading-none" aria-label="Nächster Werktag" title="Nächster Werktag">›</button><button type="button" id="p-today" class="btn2 !px-3 !py-2">Heute</button><button id="csv" class="btn2 hidden">CSV-Export</button></div>
     </div>
     
     <!-- Tagesplan: Visueller Raumplan (Lesemodus) -->
@@ -130,6 +130,7 @@ const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const today=()=>iso(new Date());
 const isWeekend=s=>{if(!s)return false;const[y,m,d]=s.split('-').map(Number);const w=new Date(y,m-1,d).getDay();return w===0||w===6;};
 const nextWeekday=()=>{const d=new Date();while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);return iso(d);};
+const stepWeekday=(s,dir)=>{const[y,m,d]=(s||today()).split('-').map(Number);const x=new Date(y,m-1,d);do x.setDate(x.getDate()+dir);while(x.getDay()===0||x.getDay()===6);return iso(x);};
 const WE_MSG='Schichten sind nur von Montag bis Freitag möglich.';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validName=n=>/^[\p{L}\p{N}][\p{L}\p{N}._-]{0,39}$/u.test(n||'');
@@ -431,9 +432,10 @@ $('csv').onclick=()=>{
 
 // Event Delegation & Handler
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-tab],[data-desk],[data-edit],[data-del],[data-pw],[data-deluser],[data-shifts],[data-closeshifts]'); if(!t)return;
+  const t=e.target.closest('[data-tab],[data-desk],[data-edit],[data-del],[data-pw],[data-deluser],[data-shifts],[data-closeshifts],[data-day]'); if(!t)return;
   const d=t.dataset;
-  if(d.tab){tab=d.tab;tabs();}
+  if(d.day){const inp=$(d.day);inp.value=stepWeekday(inp.value,Number(d.dir));inp.dispatchEvent(new Event('change'));}
+  else if(d.tab){tab=d.tab;tabs();}
   else if(d.desk){$('f-desk').value=d.desk;renderForm();}
   else if(d.edit)startEdit(d.edit);
   else if(d.del)removeShift(d.del);
@@ -446,6 +448,7 @@ document.addEventListener('click',e=>{
 $('f-ho').addEventListener('change',renderForm);
 $('f-date').addEventListener('change',()=>{if(isWeekend($('f-date').value)){alert(WE_MSG);$('f-date').value=nextWeekday();}renderForm();});
 $('p-date').addEventListener('change',renderPlan);
+$('p-today').onclick=()=>{$('p-date').value=today();renderPlan();};
 
 $('f-date').value=nextWeekday();
 $('p-date').value=today();
