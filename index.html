@@ -132,13 +132,15 @@ const isWeekend=s=>{if(!s)return false;const[y,m,d]=s.split('-').map(Number);con
 const nextWeekday=()=>{const d=new Date();while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);return iso(d);};
 const WE_MSG='Schichten sind nur von Montag bis Freitag möglich.';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const validName=n=>/^[\p{L}\p{N}._-]{1,40}$/u.test(n||'');
-const NAME_MSG='Der Benutzername darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten.';
+const validName=n=>/^[\p{L}\p{N}][\p{L}\p{N}._-]{0,39}$/u.test(n||'');
+const NAME_MSG='Der Benutzername muss mit einem Buchstaben oder einer Zahl beginnen und darf nur Buchstaben, Zahlen, Punkt, Unterstrich und Bindestrich enthalten (max. 40 Zeichen).';
 const sid=(date,name)=>`${date}_${name.toLowerCase()}`;
 const lockId=(date,desk)=>`${date}_${desk}`;
 const fmt=s=>{if(!s)return '';const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d).toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});};
 const leadOk=s=>{if(isAdmin())return true;const[y,m,d]=s.split('-').map(Number);return new Date()<=new Date(y,m-1,d-1,14,0,0);};
 const leadAlert=()=>alert('Änderungen sind für diesen Tag nur bis 14:00 Uhr des Vortages möglich. Bitte wende dich an den Overhead.');
+const byStart=(a,b)=>String(a.start||'').localeCompare(String(b.start||''));
+const byDate=(a,b)=>String(a.date||'').localeCompare(String(b.date||''))||byStart(a,b);
 const run=async f=>{try{await f();return true;}catch(e){alert(e.message||'Speichern fehlgeschlagen.');return false;}};
 
 // Auswahllisten initialisieren
@@ -146,7 +148,7 @@ $('f-start').innerHTML='<option value="">Uhrzeit wählen</option>'+Array.from({l
 $('f-break').innerHTML='<option value="">Pause wählen</option>'+[0,15,30,45,60,75,90].map(m=>`<option>${m} Minuten</option>`).join('');
 
 // Live-Daten aus Firestore laden
-const fail=e=>{$('load').classList.remove('hidden');$('load').textContent='Verbindung zur Datenbank fehlgeschlagen: '+e.message;};
+const fail=e=>{$('auth').classList.add('hidden');$('app').classList.add('hidden');$('load').classList.remove('hidden');$('load').textContent='Verbindung zur Datenbank fehlgeschlagen: '+e.message;};
 onSnapshot(collection(db,'users'),s=>{users=s.docs.map(d=>d.data());ready.u=1;render();},fail);
 onSnapshot(collection(db,'shifts'),s=>{shifts=s.docs.map(d=>({...d.data(),id:d.id}));ready.s=1;render();},fail);
 onSnapshot(doc(db,'settings','main'),s=>{settings=s.exists()?s.data():{desks:false};ready.c=1;render();},fail);
@@ -162,6 +164,7 @@ $('authForm').onsubmit=async e=>{
     if(!confirm('Es gibt noch kein Admin-Konto. Mit diesem Passwort anlegen?'))return;
     u={username:'Admin',password:p};
     if(!await run(()=>setDoc(doc(db,'users','admin'),u)))return;
+    if(!users.some(x=>same(x.username,'admin')))users=[...users,u];
   }
   if(!u||u.password!==p)return alert('Ungültige Anmeldedaten.');
   me=u.username;localStorage.setItem('sp_user',me);
@@ -263,9 +266,9 @@ function tbl(l,nm,dt,act){
 }
 
 function renderPlan(){
-  const d=$('p-date').value, l=shifts.filter(s=>s.date===d).sort((a,b)=>a.start.localeCompare(b.start));
+  const d=$('p-date').value, l=shifts.filter(s=>s.date===d).sort(byStart);
   const o=l.filter(s=>!s.isHO).length;
-  $('p-head').textContent=`${fmt(d)}: Büro ${o}/${MAX}, Homeoffice ${l.length-o}`;
+  $('p-head').textContent=d?`${fmt(d)}: Büro ${o}/${MAX}, Homeoffice ${l.length-o}`:'Bitte ein Datum wählen.';
   
   // Tagesplan: Raumplan anzeigen
   const showDeskOverview = settings.desks;
@@ -282,7 +285,7 @@ function renderPlan(){
 
 function renderMine(){
   if(!me)return;
-  $('mine').innerHTML=tbl(shifts.filter(s=>same(s.name,me)).sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start)),false,true,true);
+  $('mine').innerHTML=tbl(shifts.filter(s=>same(s.name,me)).sort(byDate),false,true,true);
 }
 
 // Mitarbeiterverwaltung
@@ -291,7 +294,7 @@ function renderUsers(){
   const l=users.filter(u=>!same(u.username,'admin'));
   $('ulist').innerHTML=l.length?'<table class="w-full text-sm"><tbody>'+l.map(u=>`<tr class="border-b"><td class="font-semibold">${esc(u.username)}</td><td class="text-right whitespace-nowrap"><button class="btn2" data-shifts="${esc(u.username)}">Schichten anzeigen</button> <button class="btn2" data-pw="${esc(u.username)}">Passwort</button> <button class="btn2 !text-red-600" data-deluser="${esc(u.username)}">Löschen</button></td></tr>`).join('')+'</tbody></table>':'<p class="text-slate-400 text-sm">Noch keine Mitarbeiter angelegt.</p>';
   if(viewUser&&!users.some(u=>same(u.username,viewUser)))viewUser=null;
-  $('ushifts').innerHTML=viewUser?`<div class="flex justify-between items-center pb-2"><h3 class="font-bold text-base">Schichten von ${esc(viewUser)}</h3><button class="btn2" data-closeshifts="1">Schließen</button></div>`+tbl(shifts.filter(s=>same(s.name,viewUser)).sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start)),false,true,true):'';
+  $('ushifts').innerHTML=viewUser?`<div class="flex justify-between items-center pb-2"><h3 class="font-bold text-base">Schichten von ${esc(viewUser)}</h3><button class="btn2" data-closeshifts="1">Schließen</button></div>`+tbl(shifts.filter(s=>same(s.name,viewUser)).sort(byDate),false,true,true):'';
 }
 
 // Transaktionssicheres Speichern
@@ -307,8 +310,9 @@ async function saveShift(sh,old){
       if(l.exists()&&(!old||l.data().shift!==old.id))throw new Error(`Platz ${sh.desk} ist am ${fmt(sh.date)} bereits belegt.`);
     }
     if(old){
-      t.delete(doc(db,'shifts',old.id));
-      if(old.desk)t.delete(doc(db,'desks',lockId(old.date,old.desk)));
+      if(old.id!==id)t.delete(doc(db,'shifts',old.id));
+      const oldLock=old.desk?lockId(old.date,old.desk):null, newLock=sh.desk?lockId(sh.date,sh.desk):null;
+      if(oldLock&&oldLock!==newLock)t.delete(doc(db,'desks',oldLock));
     }
     t.set(ref,sh);
     if(lk)t.set(lk,{shift:id});
@@ -321,16 +325,17 @@ $('form').onsubmit=async e=>{
   if(editId&&!old)return alert('Diese Schicht existiert nicht mehr.');
   const name=old?old.name:(isAdmin()?$('f-user').value:me);
   if(!name)return alert('Bitte einen Mitarbeiter wählen.');
-  const date=$('f-date').value, isHO=$('f-ho').checked;
-  const deskVal = (settings.desks && !isHO) ? $('f-desk').value : '';
-  if(!isHO && settings.desks && !deskVal) {
-    if(!confirm('Es wurde kein fester Arbeitsplatz ausgewählt. Fortfahren ohne Platz?')) return;
-  }
-  const sh={name,date,start:$('f-start').value,breakTime:$('f-break').value,isHO,desk:deskVal};
+  const date=$('f-date').value, isHO=$('f-ho').checked, start=$('f-start').value, breakTime=$('f-break').value;
+  if(!date||!start||!breakTime)return alert('Bitte Datum, Uhrzeit und Pause auswählen.');
   if(isWeekend(date))return alert(WE_MSG);
   if(!leadOk(date)||(old&&!leadOk(old.date)))return leadAlert();
   if(!isHO&&shifts.filter(s=>s.date===date&&!s.isHO&&s.id!==editId).length>=MAX)
     return alert(`Alle ${MAX} Büroplätze sind an diesem Tag vergeben. Homeoffice ist weiterhin möglich.`);
+  const deskVal=(settings.desks&&!isHO)?$('f-desk').value:'';
+  if(deskVal&&shifts.some(s=>s.date===date&&s.desk===deskVal&&s.id!==editId))
+    return alert(`Platz ${deskVal} ist an diesem Tag inzwischen belegt. Bitte einen anderen Platz wählen.`);
+  if(!isHO&&settings.desks&&!deskVal&&!confirm('Es wurde kein fester Arbeitsplatz ausgewählt. Fortfahren ohne Platz?'))return;
+  const sh={name,date,start,breakTime,isHO,desk:deskVal};
   if(!await run(()=>saveShift(sh,old)))return;
   if(isAdmin())$('p-date').value=date;
   tab=isAdmin()?(viewUser?'users':'plan'):'mine';
@@ -378,11 +383,12 @@ $('uform').onsubmit=async e=>{
   if(!validName(n))return alert(NAME_MSG);
   if(same(n,'admin'))return alert('Der Name "admin" ist reserviert.');
   if(users.some(u=>same(u.username,n)))return alert('Dieser Benutzername existiert bereits.');
+  if(!p.trim())return alert('Bitte ein Start-Passwort eingeben.');
   if(await run(()=>setDoc(doc(db,'users',n.toLowerCase()),{username:n,password:p})))$('uform').reset();
 };
 
 async function changePw(name){
-  const p=prompt(`Neues Passwort für ${name}:`); if(!p)return;
+  const p=prompt(`Neues Passwort für ${name}:`); if(!p||!p.trim())return alert('Das Passwort darf nicht leer sein.');
   await run(()=>setDoc(doc(db,'users',name.toLowerCase()),{username:name,password:p}));
 }
 
@@ -414,7 +420,7 @@ $('adminpw').onclick=async()=>{
 
 // CSV Export
 $('csv').onclick=()=>{
-  const d=$('p-date').value, l=shifts.filter(s=>s.date===d).sort((a,b)=>a.start.localeCompare(b.start));
+  const d=$('p-date').value, l=shifts.filter(s=>s.date===d).sort(byStart);
   if(!l.length)return alert('Für diesen Tag gibt es keine Schichten.');
   const q=v=>{let t=String(v??'');if(/^\s*[=+\-@]/.test(t))t="'"+t;return `"${t.replace(/"/g,'""')}"`;};
   const rows=['Mitarbeiter;Platz;Typ;Uhrzeit;Pause;Datum',...l.map(s=>[s.name,s.desk||'-',s.isHO?'HO':'Büro',`ab ${s.start} Uhr`,s.breakTime,fmt(s.date)].map(q).join(';'))];
@@ -437,8 +443,8 @@ document.addEventListener('click',e=>{
   else if(d.deluser)deleteUser(d.deluser);
 });
 
-['f-date','f-ho'].forEach(id=>$(id).addEventListener('change',renderForm));
-$('f-date').addEventListener('change',()=>{if(isWeekend($('f-date').value)){alert(WE_MSG);$('f-date').value=nextWeekday();renderForm();}});
+$('f-ho').addEventListener('change',renderForm);
+$('f-date').addEventListener('change',()=>{if(isWeekend($('f-date').value)){alert(WE_MSG);$('f-date').value=nextWeekday();}renderForm();});
 $('p-date').addEventListener('change',renderPlan);
 
 $('f-date').value=nextWeekday();
