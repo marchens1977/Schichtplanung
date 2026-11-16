@@ -392,6 +392,7 @@ async function removeShift(id){
 // Admin Mitarbeiterverwaltung
 $('uform').onsubmit=async e=>{
   e.preventDefault();
+  if(!isAdmin())return;
   const n=$('u-name').value.trim(), p=$('u-pw').value;
   if(!validName(n))return alert(NAME_MSG);
   if(same(n,'admin'))return alert('Der Name "admin" ist reserviert.');
@@ -401,11 +402,13 @@ $('uform').onsubmit=async e=>{
 };
 
 async function changePw(name){
+  if(!isAdmin())return;
   const p=prompt(`Neues Passwort für ${name}:`); if(!p||!p.trim())return alert('Das Passwort darf nicht leer sein.');
   await run(()=>setDoc(doc(db,'users',name.toLowerCase()),{username:name,password:p}));
 }
 
 async function deleteUser(name){
+  if(!isAdmin())return;
   if(!confirm(`Benutzer "${name}" und alle seine Schichten löschen?`))return;
   if(same(viewUser,name)) viewUser=null;
   await run(()=>{
@@ -419,7 +422,7 @@ async function deleteUser(name){
   });
 }
 
-$('desktog').onchange=()=>run(()=>setDoc(doc(db,'settings','main'),{desks:$('desktog').checked}));
+$('desktog').onchange=()=>isAdmin()&&run(()=>setDoc(doc(db,'settings','main'),{desks:$('desktog').checked}));
 
 $('adminpw').onclick=async()=>{
   const cur=users.find(u=>same(u.username,'admin'));

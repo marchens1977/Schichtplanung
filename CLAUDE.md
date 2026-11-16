@@ -62,6 +62,10 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 
 - App-Name überall **„Schichtplanung“** (nicht „Schichten“), auch als `short_name`.
 - Kein Play Store: PWA reicht für das kleine Team.
+- **Passwörter vergibt nur der Admin.** Mitarbeiter können ihr Passwort nicht selbst
+  festlegen oder ändern – bewusst so, damit niemand ein anderswo genutztes Passwort
+  eingibt (Passwörter liegen derzeit im Klartext). So beibehalten, bis Stufe 2 umgesetzt ist.
+  Admin-Funktionen prüfen zusätzlich `isAdmin()`.
 
 ## Verlauf
 
@@ -77,6 +81,7 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **16.11.2026:** Hinweis in „Büro Leitung“ (zwei Wörter) geändert – PR #9.
 - **16.11.2026:** Hinweis „Coaching-Raum“ ergänzt, normale Schreibweise statt Großbuchstaben – PR #10.
 - **16.11.2026:** Speichern-Knopf über den Raumplan verschoben – PR #11.
+- **16.11.2026:** Admin-Funktionen zusätzlich mit `isAdmin()` abgesichert – PR #12.
 
 ## Offene Ideen / nächste Schritte
 
