@@ -53,6 +53,7 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
   Hinweise in normaler Groß-/Kleinschreibung, nicht in Großbuchstaben.
 - Datumsfelder (Formular + Tagesplan) haben ‹ › zum Springen um einen **Werktag**
   (Wochenenden werden übersprungen); Tagesplan zusätzlich „Heute“.
+- Knopf „Schicht eintragen“ / „Änderung speichern“ steht **über** dem Raumplan, nicht darunter.
 - Schicht-Beginn 11:00–17:00 Uhr in 30-Minuten-Schritten, Pause 0–90 Minuten.
 - Benutzer `admin` ist reserviert; beim allerersten Start wird das Admin-Konto angelegt
   (Passwort min. 8 Zeichen). Nur der Admin sieht Mitarbeiterverwaltung, Einstellungen, CSV-Export.
@@ -75,6 +76,7 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **16.11.2026:** Raumplan-Hinweise Overhead / Eingang / Büroleitung – PR #8.
 - **16.11.2026:** Hinweis in „Büro Leitung“ (zwei Wörter) geändert – PR #9.
 - **16.11.2026:** Hinweis „Coaching-Raum“ ergänzt, normale Schreibweise statt Großbuchstaben – PR #10.
+- **16.11.2026:** Speichern-Knopf über den Raumplan verschoben – PR #11.
 
 ## Offene Ideen / nächste Schritte
 

@@ -50,6 +50,12 @@ th,td{@apply p-2 text-left}
       <div><label class="lbl">Pause</label><select id="f-break" required class="inp"></select></div>
       <div class="flex items-center gap-2"><input type="checkbox" id="f-ho" class="w-4 h-4"><label for="f-ho" class="text-sm font-medium">Homeoffice (zählt nicht zu den 16 Büroplätzen)</label></div>
       
+      <!-- Speichern-Knopf über dem Raumplan, damit er nicht übersehen wird -->
+      <div class="sm:col-span-2 flex gap-2 pt-1">
+        <button id="f-submit" class="btn">Schicht eintragen</button>
+        <button type="button" id="f-cancel" class="btn2 hidden">Abbrechen</button>
+      </div>
+
       <!-- Formular: Raumplan (L-Form Layout) -->
       <div id="f-desk-w" class="hidden sm:col-span-2 space-y-2 pt-2 border-t">
         <div class="flex flex-wrap justify-between items-center gap-1">
@@ -61,10 +67,6 @@ th,td{@apply p-2 text-left}
         <div id="plan-grid" class="grid grid-cols-3 gap-1.5 sm:gap-3 pt-1"></div>
       </div>
 
-      <div class="sm:col-span-2 flex gap-2 pt-2">
-        <button id="f-submit" class="btn">Schicht eintragen</button>
-        <button type="button" id="f-cancel" class="btn2 hidden">Abbrechen</button>
-      </div>
     </form>
   </section>
 
