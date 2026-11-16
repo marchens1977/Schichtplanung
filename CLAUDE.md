@@ -82,6 +82,8 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **16.11.2026:** Hinweis „Coaching-Raum“ ergänzt, normale Schreibweise statt Großbuchstaben – PR #10.
 - **16.11.2026:** Speichern-Knopf über den Raumplan verschoben – PR #11.
 - **16.11.2026:** Admin-Funktionen zusätzlich mit `isAdmin()` abgesichert – PR #12.
+- **16.11.2026:** Plan Stufe 2, Kosten und Datenschutz-Stand notiert – PR #13.
+- **16.11.2026:** Betriebsvarianten A/B/C (lokal auf Pi, Pi-WLAN, Cloud) notiert – PR #14.
 
 ## Offene Ideen / nächste Schritte
 
@@ -104,5 +106,31 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
   derzeit *alle* Schichten → Lesevorgänge wachsen mit der Zeit. Mit Stufe 2 umsetzen:
   nur Schichten ab heute (bzw. Admin: Zeitraum) laden und alte Schichten nach einer Frist
   automatisch löschen (Löschkonzept für den Datenschutz).
+- **Betriebsvarianten – Entscheidung offen (Nutzer denkt nach, Stand 16.11.2026):**
+  Erst entscheiden, dann nur EINE Variante bauen (nicht Firebase-Stufe-2 UND lokal).
+  Empfehlung: alle drei Varianten dem Datenschutzbeauftragten/der IT vorlegen.
+  - **C) Cloud (Firebase, Stufe 2 wie oben):** Eintragen von überall inkl. Homeoffice/Handy.
+    Nachteil: US-Anbieter, Auftragsverarbeitungsvertrag, Organisation als Betreiber nötig.
+  - **B) Nur lokal auf einem Raspberry Pi 400 im Büro (ohne Netz):** kleiner lokaler Server
+    + SQLite-Datei auf dem Pi, alle Programmteile (Tailwind usw.) lokal, Chromium im
+    Kiosk-Modus, Passwörter gehasht. Aufwand: Umbau ca. 1–2 h (Claude), Einrichtung Pi
+    ca. 30–60 min (Nutzer, Befehle kopieren). Vorteile: Datenschutz deutlich einfacher,
+    keine Kosten/Abhängigkeiten. Nachteile/To-dos:
+    - Eintragen nur an diesem Gerät (Homeoffice vorher im Büro eintragen).
+    - **Pi 400 hat keine batteriegepufferte Uhr** → ohne Internet falsche Zeit nach
+      Stromausfall (14-Uhr-Regel, „Heute“). Lösung: USB-Uhrmodul oder Uhr manuell stellen.
+    - Automatische tägliche Sicherung auf USB-Stick (SD-Karten können ausfallen).
+    - Updates nur per USB-Stick oder kurz ins Internet.
+    - Automatische Abmeldung nach ca. 2 Minuten ohne Eingabe (ein Gerät für alle).
+  - **A) Wie B, aber der Pi spannt ein eigenes WLAN auf** (z. B. „Schichtplanung“, mit
+    Passwort, ohne Internet): Eintragen im Büro auch per Handy. Nachteil: Handy meldet
+    „kein Internet“; IT muss eigenes WLAN erlauben.
+  - **Verworfen: Pi im Gast-WLAN** (mit Zustimmungsseite/NeverSSL). Gründe: Geräte sehen
+    sich dort meist nicht (Client-Isolation), jeder Besucher im selben Netz, meist
+    unverschlüsselt (Passwörter mitlesbar), Zustimmung läuft ab, vermutlich unzulässig.
+  - Angebot an den Nutzer: Kurzbeschreibung für den Datenschutz um einen Vergleich A/B/C
+    ergänzen („Ja, ergänze den Vergleich“).
+- **Hinweis Pi:** Auf dem Pi-Schreibtisch lag eine alte lokale Kopie `Schichtplanung.html`
+  (ohne Gestaltung). Immer die Online-Adresse benutzen; Kopie kann gelöscht werden.
 - **Datenschutz:** Kurzbeschreibung für den Datenschutzbeauftragten liegt als Claude-Doc vor
   (Titel „Schichtplanung – Kurzbeschreibung für den Datenschutz“). Gespräch steht noch aus.
