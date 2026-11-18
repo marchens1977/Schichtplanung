@@ -84,6 +84,7 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **16.11.2026:** Admin-Funktionen zusätzlich mit `isAdmin()` abgesichert – PR #12.
 - **16.11.2026:** Plan Stufe 2, Kosten und Datenschutz-Stand notiert – PR #13.
 - **16.11.2026:** Betriebsvarianten A/B/C (lokal auf Pi, Pi-WLAN, Cloud) notiert – PR #14.
+- **18.11.2026:** Idee „Datenbank auf dem privaten Pi zu Hause“ geprüft und vorerst zurückgestellt – PR #15.
 
 ## Offene Ideen / nächste Schritte
 
@@ -125,6 +126,12 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
   - **A) Wie B, aber der Pi spannt ein eigenes WLAN auf** (z. B. „Schichtplanung“, mit
     Passwort, ohne Internet): Eintragen im Büro auch per Handy. Nachteil: Handy meldet
     „kein Internet“; IT muss eigenes WLAN erlauben.
+  - **Zurückgestellt (18.11.2026): Datenbank auf dem privaten Pi des Nutzers zu Hause**
+    (Projekt `marchens1977/Raspberry-Pi-Server`, Pi `192.168.178.84`, nur Heimnetz + WireGuard-VPN der FritzBox).
+    Technisch gut machbar (wie Kicktipp-Assistent), aber Kollegen kämen nur per VPN ins **ganze Heimnetz**
+    (nicht empfohlen) oder über Öffnung ins Internet (im Server-Projekt ausgeschlossen); zudem dienstliche
+    Daten auf privatem Gerät (Arbeitgeber/Datenschutz müsste zustimmen). Sinnvoll nur, wenn die App allein
+    vom Nutzer genutzt wird. Entscheidung des Nutzers: **erstmal alles so lassen** (Firebase wie bisher).
   - **Verworfen: Pi im Gast-WLAN** (mit Zustimmungsseite/NeverSSL). Gründe: Geräte sehen
     sich dort meist nicht (Client-Isolation), jeder Besucher im selben Netz, meist
     unverschlüsselt (Passwörter mitlesbar), Zustimmung läuft ab, vermutlich unzulässig.
