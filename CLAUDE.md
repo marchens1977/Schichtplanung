@@ -17,6 +17,26 @@ aktualisieren.
   Aufgabe abgeschlossen ist, erinnere den Nutzer am Ende der Antwort:
   „Tipp: Du kannst jetzt mit `/model claude-opus-5-5` zurückstellen.“
 
+## Hilfsprogramme und Tests (Regel des Nutzers, gilt dauerhaft)
+
+1. Automatische Prüfungen (Tests) und Hilfsprogramme, die über eine einzelne Aufgabe hinaus
+   nützlich sind, werden im Projekt gespeichert (Ordner `werkzeuge/` oder `test/`), nicht nur
+   im Arbeitsbereich der Sitzung (der geht beim Archivieren verloren).
+2. Hier im Tagebuch steht, wie man sie startet und was sie prüfen.
+3. Nach jeder Code-Änderung die vorhandenen Prüfungen laufen lassen; bei neuen Funktionen
+   passende Prüfpunkte ergänzen.
+4. Gibt es noch keine automatische Prüfung, bei der nächsten Code-Änderung eine einfache anlegen.
+5. Was Claude nicht selbst testen kann (z. B. echte Anmeldungen, das echte Handy, den
+   Raspberry Pi), hier als Test für den Nutzer vermerken.
+
+**Stand (18.11.2026):** Noch keine automatischen Prüfungen vorhanden; wird bei der nächsten
+Code-Änderung angelegt (z. B. Browser-Test mit Playwright gegen `index.html`, Firebase dabei
+durch eine Attrappe ersetzen).
+
+**Tests für den Nutzer (kann Claude nicht selbst prüfen):**
+- Anmelden mit echtem Konto am Handy, Schicht eintragen/ändern/löschen.
+- App am Handy installieren (Chrome → ⋮ → „App installieren“) und öffnen.
+
 ## Worum es geht
 
 Web-App für ein kleines Team zur Planung von Schichten (Montag bis Freitag),
@@ -85,6 +105,7 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **16.11.2026:** Plan Stufe 2, Kosten und Datenschutz-Stand notiert – PR #13.
 - **16.11.2026:** Betriebsvarianten A/B/C (lokal auf Pi, Pi-WLAN, Cloud) notiert – PR #14.
 - **18.11.2026:** Idee „Datenbank auf dem privaten Pi zu Hause“ geprüft und vorerst zurückgestellt – PR #15.
+- **18.11.2026:** Regel „Hilfsprogramme und Tests gehören ins Projekt“ aufgenommen – PR #16.
 
 ## Offene Ideen / nächste Schritte
 
