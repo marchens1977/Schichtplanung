@@ -31,6 +31,12 @@ h2{@apply text-mets-blue}
 <div class="max-w-4xl mx-auto">
 <div id="load" class="text-center p-10 text-slate-500">Lade Daten …</div>
 
+<!-- Hinweis-Balken: neue App-Version verfügbar -->
+<div id="upd-bar" class="hidden mb-3 flex flex-wrap items-center justify-between gap-2 bg-mets-orange-light border-2 border-mets-orange rounded-xl px-4 py-3 text-sm text-mets-blue">
+  <span><b>Neue Version verfügbar</b> (<span id="upd-bar-v"></span>)</span>
+  <button type="button" id="upd-now" class="btn">Jetzt aktualisieren</button>
+</div>
+
 <div id="auth" class="hidden max-w-sm mx-auto card mt-10">
   <h1 class="text-xl font-bold text-center text-mets-blue">Anmelden</h1>
   <form id="authForm" class="space-y-3">
@@ -109,8 +115,15 @@ h2{@apply text-mets-blue}
     <h2 class="font-bold text-lg">Einstellungen</h2>
     <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="desktog" class="w-4 h-4"> Platzwahl (P1–P16) aktivieren</label>
     <div class="pt-3 border-t"><button id="adminpw" class="btn2 !px-3 !py-2">Admin-Passwort ändern</button></div>
+    <div class="pt-3 border-t space-y-2">
+      <h3 class="font-bold text-sm text-mets-blue">App-Version und Updates</h3>
+      <p class="text-sm">Installiert: <b class="upd-ver"></b><br>Status: <b id="upd-status" class="text-mets-blue">noch nicht geprüft</b></p>
+      <button type="button" id="upd-check" class="btn2 !px-3 !py-2">Nach Update suchen</button>
+      <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="upd-auto" class="w-4 h-4"> Updates automatisch installieren (gilt für dieses Gerät)</label>
+    </div>
   </section>
 </div>
+<p id="ver-foot" class="text-center text-xs text-slate-500 pt-4">Version <span class="upd-ver"></span> · <button type="button" id="upd-check2" class="underline text-mets-blue">Nach Update suchen</button></p>
 </div>
 
 <script type="module">
@@ -475,6 +488,54 @@ $('f-date').value=nextWeekday();
 $('p-date').value=today();
 </script>
 <script>
+// ===== Updates =====
+// Bei jeder Änderung an der App: APP_VERSION hier UND in version.json erhöhen (gleicher Text),
+// außerdem CACHE in sw.js. Der Test in test/ prüft, dass beides übereinstimmt.
+const APP_VERSION='2026.11.19-2';
+(()=>{
+  const $=id=>document.getElementById(id);
+  const AUTO_KEY='sp_autoupd', TRY_KEY='sp_upd_try';
+  let neu=null;
+  document.querySelectorAll('.upd-ver').forEach(e=>e.textContent=APP_VERSION);
+  $('upd-auto').checked=localStorage.getItem(AUTO_KEY)!=='0';
+  $('upd-auto').onchange=()=>localStorage.setItem(AUTO_KEY,$('upd-auto').checked?'1':'0');
+  const status=(t,farbe)=>{$('upd-status').textContent=t;$('upd-status').className=farbe||'text-mets-blue';};
+  // Ist der Nutzer gerade mitten in einer Eingabe? Dann nicht ungefragt neu laden.
+  const beschaeftigt=()=>{
+    const a=document.activeElement;
+    if(a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))return true;
+    if(!$('f-cancel').classList.contains('hidden'))return true; // Schicht wird gerade geändert
+    return ['au','ap','u-name','u-pw','f-start','f-break'].some(id=>$(id)&&$(id).value);
+  };
+  const aktualisieren=async()=>{
+    sessionStorage.setItem(TRY_KEY,neu||'');
+    try{const r=await navigator.serviceWorker?.getRegistration();await r?.update();}catch(e){}
+    location.reload();
+  };
+  window.spUpdateCheck=async(manuell)=>{
+    if(manuell)status('wird geprüft …');
+    let v;
+    try{
+      const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});
+      if(!r.ok)throw new Error();
+      v=String((await r.json()).version||'');
+    }catch(e){if(manuell)status('Prüfung nicht möglich (keine Internetverbindung?)','text-red-600');return;}
+    if(!v||v===APP_VERSION){neu=null;$('upd-bar').classList.add('hidden');status('Die App ist aktuell.','text-green-700');return;}
+    neu=v;
+    status('Update verfügbar: '+v,'text-mets-orange-ink');
+    $('upd-bar-v').textContent=v;
+    // Automatisch nur einmal pro neuer Version versuchen (verhindert Endlos-Neuladen)
+    const auto=localStorage.getItem(AUTO_KEY)!=='0'&&sessionStorage.getItem(TRY_KEY)!==v;
+    if(auto&&!beschaeftigt())return aktualisieren();
+    $('upd-bar').classList.remove('hidden');
+  };
+  $('upd-now').onclick=aktualisieren;
+  $('upd-check').onclick=()=>spUpdateCheck(true);
+  $('upd-check2').onclick=()=>{spUpdateCheck(true).then(()=>{if(!neu)alert('Die App ist aktuell (Version '+APP_VERSION+').');});};
+  setTimeout(()=>spUpdateCheck(false),3000);                 // kurz nach dem Start
+  setInterval(()=>spUpdateCheck(false),30*60*1000);          // alle 30 Minuten
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')spUpdateCheck(false);}); // App wieder geöffnet
+})();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js'));}
 </script>
 </body>

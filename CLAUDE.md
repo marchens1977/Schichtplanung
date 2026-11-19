@@ -34,7 +34,9 @@ aktualisieren.
   `test/firestore-attrappe.js` ersetzt (keine echten Daten!), das Tailwind-CDN durch lokal erzeugtes CSS.
   Prüft: Anmeldeseite, Admin-Erststart, Mitarbeiter anlegen, Platzwahl einschalten, Login als
   Mitarbeiter, Werktag-Pfeil, Platz wählen, Schicht speichern, Platzsperre, Tagesplan, L-Form des
-  Raumplans und die Mets-Farben. Bildschirmfotos landen in `test/bilder/` (nicht im Repository).
+  Raumplans, die Mets-Farben, die Update-Funktion (gleiche Versionsnummer in `index.html` und
+  `version.json`, Hinweis-Balken, automatisches Neuladen, Schutz gegen Endlos-Neuladen) und den
+  Service Worker (aktiv, Kopie angelegt, Seite lädt ohne Internet). Bildschirmfotos landen in `test/bilder/` (nicht im Repository).
   Start: `cd test && npm install && npm test` (Playwright muss vorhanden sein; in Claude-Sitzungen vorinstalliert).
 - `werkzeuge/icons_erzeugen.py` – zeichnet die App-Symbole in `icons/` neu (Blau/Orange).
   Start: `python3 werkzeuge/icons_erzeugen.py` (braucht Pillow).
@@ -45,6 +47,10 @@ aktualisieren.
 - [ ] Neue Farben (Blau/Orange) am Handy sichtbar? Ggf. Seite 2× neu laden.
 - [ ] Neues App-Symbol (blau mit orangem Kalender): alte App deinstallieren und neu installieren.
 - [ ] Kopfleiste des Handys (Statusleiste) in der installierten App dunkelblau?
+- [ ] Unten in der App steht „Version 2026.11.19-2“ (ggf. App 1× schließen und neu öffnen).
+- [ ] Admin → Einstellungen → „Nach Update suchen“ → Status „Die App ist aktuell.“
+- [ ] Beim nächsten Update: App öffnen (oder aus dem Hintergrund holen) → lädt sich nach ca. 3 Sekunden
+      selbst neu und zeigt die neue Versionsnummer.
 
 ## Worum es geht
 
@@ -64,7 +70,17 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
     Angemeldeter Name liegt in `localStorage` (`sp_user`).
 - `manifest.json`: App-Name, Farben, Symbole (PWA). Wird als `manifest.json?v=2`
   eingebunden; bei Änderungen am Manifest die Versionsnummer erhöhen.
-- `sw.js`: Service Worker. Eigene Dateien: erst Netz, sonst Kopie. Firebase/Tailwind
+- **Updates:** `version.json` enthält die aktuelle Versionsnummer, `APP_VERSION` in `index.html`
+  die eingebaute. Die App vergleicht beide: 3 s nach dem Start, beim Zurückholen aus dem Hintergrund
+  und alle 30 Minuten. Bei Unterschied lädt sie sich selbst neu (Schalter „Updates automatisch
+  installieren“ in den Einstellungen, pro Gerät, Standard an). Tippt jemand gerade etwas ein oder ist
+  die Automatik aus, erscheint stattdessen der Balken „Neue Version verfügbar – Jetzt aktualisieren“.
+  Pro neuer Version wird höchstens einmal automatisch neu geladen (kein Endlos-Neuladen).
+  Versionsnummer + „Nach Update suchen“ stehen auch unten in der App (für alle Mitarbeiter).
+  **Regel: Bei JEDER Änderung an der App `APP_VERSION` und `version.json` gleich erhöhen
+  (Format `JJJJ.MM.TT-n`) und `CACHE` in `sw.js` hochzählen.** Sonst bekommt niemand das Update mit.
+- `sw.js`: Service Worker. Eigene Dateien: erst Netz (mit `cache: 'no-cache'`, damit keine bis zu
+  10 Minuten alte Browser-Kopie benutzt wird), sonst Kopie. Firebase/Tailwind
   werden **nicht** zwischengespeichert. Bei Änderungen `CACHE`-Version erhöhen.
 - `icons/`: App-Symbole (Kalender in Mets-Blau/Orange), 192/512/maskable/Apple.
   Erzeugt mit `werkzeuge/icons_erzeugen.py`.
@@ -127,7 +143,9 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **18.11.2026:** Idee „Datenbank auf dem privaten Pi zu Hause“ geprüft und vorerst zurückgestellt – PR #15.
 - **18.11.2026:** Regel „Hilfsprogramme und Tests gehören ins Projekt“ aufgenommen – PR #16.
 - **19.11.2026:** Design in Mets-Farben (Blau/Orange), neue App-Symbole, erster automatischer
-  Browser-Test (`test/`), Symbol-Werkzeug (`werkzeuge/`). APK-Frage geprüft: bleibt PWA.
+  Browser-Test (`test/`), Symbol-Werkzeug (`werkzeuge/`). APK-Frage geprüft: bleibt PWA – PR #17.
+- **19.11.2026:** Update-Anzeige und automatische Updates (`version.json`, Einstellungen, Hinweis-Balken),
+  Service Worker fragt immer frisch beim Server nach, Tests dafür ergänzt.
 
 ## Offene Ideen / nächste Schritte
 
