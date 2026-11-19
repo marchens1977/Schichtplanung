@@ -1,0 +1,7 @@
+{
+  "name": "schichtplanung-test",
+  "private": true,
+  "description": "Automatische Browser-Prüfung der App (Firebase wird durch eine Attrappe ersetzt)",
+  "scripts": { "test": "node app.test.js" },
+  "devDependencies": { "postcss": "^8.4.47", "tailwindcss": "^3.4.14" }
+}

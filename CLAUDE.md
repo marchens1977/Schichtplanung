@@ -29,13 +29,22 @@ aktualisieren.
 5. Was Claude nicht selbst testen kann (z. B. echte Anmeldungen, das echte Handy, den
    Raspberry Pi), hier als Test für den Nutzer vermerken.
 
-**Stand (18.11.2026):** Noch keine automatischen Prüfungen vorhanden; wird bei der nächsten
-Code-Änderung angelegt (z. B. Browser-Test mit Playwright gegen `index.html`, Firebase dabei
-durch eine Attrappe ersetzen).
+**Vorhandene Prüfungen und Hilfsprogramme (Stand 19.11.2026):**
+- `test/app.test.js` – Browser-Test (Chromium in Handy-Größe). Firebase wird durch
+  `test/firestore-attrappe.js` ersetzt (keine echten Daten!), das Tailwind-CDN durch lokal erzeugtes CSS.
+  Prüft: Anmeldeseite, Admin-Erststart, Mitarbeiter anlegen, Platzwahl einschalten, Login als
+  Mitarbeiter, Werktag-Pfeil, Platz wählen, Schicht speichern, Platzsperre, Tagesplan, L-Form des
+  Raumplans und die Mets-Farben. Bildschirmfotos landen in `test/bilder/` (nicht im Repository).
+  Start: `cd test && npm install && npm test` (Playwright muss vorhanden sein; in Claude-Sitzungen vorinstalliert).
+- `werkzeuge/icons_erzeugen.py` – zeichnet die App-Symbole in `icons/` neu (Blau/Orange).
+  Start: `python3 werkzeuge/icons_erzeugen.py` (braucht Pillow).
 
 **Tests für den Nutzer (kann Claude nicht selbst prüfen):**
 - Anmelden mit echtem Konto am Handy, Schicht eintragen/ändern/löschen.
 - App am Handy installieren (Chrome → ⋮ → „App installieren“) und öffnen.
+- [ ] Neue Farben (Blau/Orange) am Handy sichtbar? Ggf. Seite 2× neu laden.
+- [ ] Neues App-Symbol (blau mit orangem Kalender): alte App deinstallieren und neu installieren.
+- [ ] Kopfleiste des Handys (Statusleiste) in der installierten App dunkelblau?
 
 ## Worum es geht
 
@@ -57,7 +66,13 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
   eingebunden; bei Änderungen am Manifest die Versionsnummer erhöhen.
 - `sw.js`: Service Worker. Eigene Dateien: erst Netz, sonst Kopie. Firebase/Tailwind
   werden **nicht** zwischengespeichert. Bei Änderungen `CACHE`-Version erhöhen.
-- `icons/`: App-Symbole (blauer Kalender), 192/512/maskable/Apple.
+- `icons/`: App-Symbole (Kalender in Mets-Blau/Orange), 192/512/maskable/Apple.
+  Erzeugt mit `werkzeuge/icons_erzeugen.py`.
+- **Design/Farben:** im Stil der New York Mets (Wunsch des Nutzers): Blau `#002D72`, Orange
+  `#FF5910`. Als Tailwind-Farben `mets-…` im `tailwind.config` oben in `index.html` definiert.
+  Kopfzeile blau mit orangem Streifen, Haupt-Knöpfe blau, aktiver Reiter und gewählter Platz
+  orange (mit blauer Schrift, besser lesbar als Weiß auf Orange), belegter Platz blau,
+  Homeoffice-Text dunkles Orange. Nur Farben, **kein** Mets-Logo (Markenrecht).
 
 ## Regeln der App (fachlich)
 
@@ -82,6 +97,11 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 
 - App-Name überall **„Schichtplanung“** (nicht „Schichten“), auch als `short_name`.
 - Kein Play Store: PWA reicht für das kleine Team.
+- **Keine APK (geprüft 19.11.2026):** Die App ist eine installierbare Web-App (PWA), keine APK.
+  Eine APK (z. B. per PWABuilder als „Trusted Web Activity“) brächte kaum Vorteile, aber Aufwand:
+  Signierschlüssel verwalten, Installation aus „unbekannten Quellen“ bei jedem Kollegen,
+  oder Play-Store-Konto (25 $ einmalig) + Prüfung. Nur neu überdenken, wenn z. B.
+  Push-Benachrichtigungen oder ein Store-Eintrag wirklich gebraucht werden.
 - **Passwörter vergibt nur der Admin.** Mitarbeiter können ihr Passwort nicht selbst
   festlegen oder ändern – bewusst so, damit niemand ein anderswo genutztes Passwort
   eingibt (Passwörter liegen derzeit im Klartext). So beibehalten, bis Stufe 2 umgesetzt ist.
@@ -106,6 +126,8 @@ inklusive Homeoffice und optionaler Platzwahl im Büro.
 - **16.11.2026:** Betriebsvarianten A/B/C (lokal auf Pi, Pi-WLAN, Cloud) notiert – PR #14.
 - **18.11.2026:** Idee „Datenbank auf dem privaten Pi zu Hause“ geprüft und vorerst zurückgestellt – PR #15.
 - **18.11.2026:** Regel „Hilfsprogramme und Tests gehören ins Projekt“ aufgenommen – PR #16.
+- **19.11.2026:** Design in Mets-Farben (Blau/Orange), neue App-Symbole, erster automatischer
+  Browser-Test (`test/`), Symbol-Werkzeug (`werkzeuge/`). APK-Frage geprüft: bleibt PWA.
 
 ## Offene Ideen / nächste Schritte
 
