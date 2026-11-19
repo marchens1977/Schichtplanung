@@ -4,29 +4,35 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Schichtplanung</title>
-<link rel="manifest" href="manifest.json?v=2">
-<meta name="theme-color" content="#2563eb">
+<link rel="manifest" href="manifest.json?v=3">
+<meta name="theme-color" content="#002D72">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Schichtplanung">
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+// Farben im Stil der New York Mets: Blau #002D72, Orange #FF5910
+tailwind.config={theme:{extend:{colors:{mets:{blue:'#002D72','blue-dark':'#001E4D','blue-light':'#E6ECF5',orange:'#FF5910','orange-dark':'#E04A08','orange-ink':'#C2410C','orange-light':'#FFF1EA',bg:'#EDF1F7'}}}}};
+</script>
 <style type="text/tailwindcss">
-.card{@apply bg-white p-4 rounded-xl shadow space-y-3}
-.inp{@apply w-full p-2 border border-slate-300 rounded-lg text-sm bg-white}
-.btn{@apply px-3 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700}
-.btn2{@apply px-2 py-1 rounded text-xs font-semibold bg-slate-100 border hover:bg-slate-200}
+.card{@apply bg-white p-4 rounded-xl shadow space-y-3 border-t-4 border-mets-orange}
+.inp{@apply w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-mets-orange focus:border-mets-orange}
+.btn{@apply px-3 py-2 rounded-lg text-sm font-semibold bg-mets-blue text-white hover:bg-mets-orange-dark}
+.btn2{@apply px-2 py-1 rounded text-xs font-semibold bg-white text-mets-blue border border-slate-300 hover:bg-mets-blue-light}
 .lbl{@apply block text-xs font-medium text-slate-600 mb-1}
 th,td{@apply p-2 text-left}
+th{@apply text-mets-blue}
+h2{@apply text-mets-blue}
 </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen p-3 sm:p-6">
+<body class="bg-mets-bg text-slate-800 min-h-screen p-3 sm:p-6">
 <div class="max-w-4xl mx-auto">
 <div id="load" class="text-center p-10 text-slate-500">Lade Daten …</div>
 
 <div id="auth" class="hidden max-w-sm mx-auto card mt-10">
-  <h1 class="text-xl font-bold text-center">Anmelden</h1>
+  <h1 class="text-xl font-bold text-center text-mets-blue">Anmelden</h1>
   <form id="authForm" class="space-y-3">
     <div><label class="lbl">Benutzername</label><input id="au" required class="inp" autocomplete="username"></div>
     <div><label class="lbl">Passwort</label><input id="ap" type="password" required class="inp" autocomplete="current-password"></div>
@@ -35,9 +41,9 @@ th,td{@apply p-2 text-left}
 </div>
 
 <div id="app" class="hidden space-y-4">
-  <header class="flex justify-between items-center bg-white rounded-xl shadow px-4 py-3">
-    <h1 class="text-xl font-bold">Schichtplanung</h1>
-    <div class="text-sm">Angemeldet: <b id="who" class="text-blue-600"></b> <button id="logout" class="btn2 ml-2">Abmelden</button></div>
+  <header class="flex justify-between items-center gap-2 bg-mets-blue text-white rounded-xl shadow px-4 py-3 border-b-4 border-mets-orange">
+    <h1 class="text-xl font-bold">Schicht<span class="text-mets-orange">planung</span></h1>
+    <div class="text-sm">Angemeldet: <b id="who" class="text-mets-orange"></b> <button id="logout" class="btn2 ml-2">Abmelden</button></div>
   </header>
   <nav id="tabs" class="flex gap-2 flex-wrap"></nav>
 
@@ -60,7 +66,7 @@ th,td{@apply p-2 text-left}
       <div id="f-desk-w" class="hidden sm:col-span-2 space-y-2 pt-2 border-t">
         <div class="flex flex-wrap justify-between items-center gap-1">
           <label class="lbl !mb-0">Büro-Raumplan (P1–P16) – Klick auf einen freien Platz wählt diesen aus:</label>
-          <span id="f-desk-selected" class="text-xs font-semibold text-blue-600">Kein Platz gewählt</span>
+          <span id="f-desk-selected" class="text-xs font-semibold text-mets-orange-ink">Kein Platz gewählt</span>
         </div>
         <input type="hidden" id="f-desk">
         <!-- 3 Spalten Grid für das L-Form Layout der Inseln -->
@@ -80,7 +86,7 @@ th,td{@apply p-2 text-left}
     
     <!-- Tagesplan: Visueller Raumplan (Lesemodus) -->
     <div id="p-desk-overview-w" class="hidden pt-2 pb-1 border-t space-y-2">
-      <h3 class="font-bold text-sm text-slate-700">Sitzplan-Übersicht für diesen Tag</h3>
+      <h3 class="font-bold text-sm text-mets-blue">Sitzplan-Übersicht für diesen Tag</h3>
       <!-- 3 Spalten Grid für das L-Form Layout der Inseln -->
       <div id="p-plan-grid" class="grid grid-cols-3 gap-1.5 sm:gap-3 pt-1"></div>
     </div>
@@ -193,7 +199,7 @@ function tabs(){
   const t=isAdmin()?[['form','Schicht eintragen'],['plan','Tagesplan'],['users','Mitarbeiter'],['set','Einstellungen']]
                    :[['form','Schicht eintragen'],['mine','Meine Schichten'],['plan','Tagesplan']];
   if(!t.some(x=>x[0]===tab))tab='form';
-  $('tabs').innerHTML=t.map(([k,l])=>`<button data-tab="${k}" class="btn2 !px-3 !py-2 ${k===tab?'!bg-blue-600 !text-white':''}">${l}</button>`).join('');
+  $('tabs').innerHTML=t.map(([k,l])=>`<button data-tab="${k}" class="btn2 !px-3 !py-2 ${k===tab?'!bg-mets-orange !text-mets-blue !border-mets-orange font-bold':''}">${l}</button>`).join('');
   ['form','mine','plan','users','set'].forEach(k=>$('t-'+k).classList.toggle('hidden',k!==tab));
 }
 
@@ -211,18 +217,18 @@ function renderIslandHTML(islandIdx, takenMap, interactive, selectedDesk) {
   const renderDeskCell = (d) => {
     const occ = takenMap[d];
     if (occ) {
-      return `<div class="rounded bg-red-500 text-white text-[11px] sm:text-xs px-0.5 py-1 sm:p-2 text-center cursor-not-allowed flex flex-col justify-center min-h-[44px] sm:min-h-[48px] min-w-0" title="Belegt von: ${esc(occ)}"><span class="font-bold">${d}</span><span class="text-[9px] sm:text-[10px] opacity-90 truncate leading-tight mt-0.5">${esc(occ)}</span></div>`;
+      return `<div class="rounded bg-mets-blue text-white text-[11px] sm:text-xs px-0.5 py-1 sm:p-2 text-center cursor-not-allowed flex flex-col justify-center min-h-[44px] sm:min-h-[48px] min-w-0" title="Belegt von: ${esc(occ)}"><span class="font-bold">${d}</span><span class="text-[9px] sm:text-[10px] opacity-90 truncate leading-tight mt-0.5">${esc(occ)}</span></div>`;
     }
     if (!interactive) {
       return `<div class="rounded bg-slate-50 border border-slate-200 text-slate-400 text-[11px] sm:text-xs px-0.5 py-1 sm:p-2 text-center flex flex-col justify-center min-h-[44px] sm:min-h-[48px] min-w-0"><span class="font-bold">${d}</span><span class="text-[10px] mt-0.5">-</span></div>`;
     }
     const isSel = selectedDesk === d;
-    return `<button type="button" data-desk="${d}" class="rounded border text-[11px] sm:text-xs px-0.5 py-1 sm:p-2 text-center transition-colors min-h-[44px] sm:min-h-[48px] min-w-0 ${isSel?'bg-blue-600 text-white font-bold border-blue-600 shadow-inner':'bg-white hover:bg-slate-50 text-slate-700 font-medium'}">${d}</button>`;
+    return `<button type="button" data-desk="${d}" class="rounded border text-[11px] sm:text-xs px-0.5 py-1 sm:p-2 text-center transition-colors min-h-[44px] sm:min-h-[48px] min-w-0 ${isSel?'bg-mets-orange text-mets-blue font-bold border-mets-orange shadow-inner':'bg-white hover:bg-mets-orange-light hover:border-mets-orange text-mets-blue font-medium border-slate-300'}">${d}</button>`;
   };
 
   return `
-    <div class="bg-amber-50 border border-amber-200 rounded-lg sm:rounded-xl p-1 sm:p-2.5 shadow-sm">
-      <div class="text-[10px] sm:text-xs text-slate-600 mb-1 sm:mb-2 font-bold tracking-wide text-center sm:text-left">INSEL ${islandIdx + 1}</div>
+    <div class="bg-mets-blue-light border border-mets-blue/20 rounded-lg sm:rounded-xl p-1 sm:p-2.5 shadow-sm">
+      <div class="text-[10px] sm:text-xs text-mets-blue mb-1 sm:mb-2 font-bold tracking-wide text-center sm:text-left">INSEL ${islandIdx + 1}</div>
       <div class="grid grid-cols-2 gap-1 sm:gap-2">
         ${desks.map(renderDeskCell).join('')}
       </div>
@@ -271,10 +277,10 @@ function renderForm(){
 function tbl(l,nm,dt,act){
   if(!l.length)return '<p class="text-slate-400 text-center p-3 text-sm">Keine Schichten.</p>';
   const dk=settings.desks;
-  return `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-slate-500 border-b">${nm?'<th>Name</th>':''}${dt?'<th>Datum</th>':''}<th>Typ</th>${dk?'<th>Platz</th>':''}<th>Zeit</th><th>Pause</th>${act?'<th></th>':''}</tr></thead><tbody>`+
+  return `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="border-b-2 border-mets-orange">${nm?'<th>Name</th>':''}${dt?'<th>Datum</th>':''}<th>Typ</th>${dk?'<th>Platz</th>':''}<th>Zeit</th><th>Pause</th>${act?'<th></th>':''}</tr></thead><tbody>`+
   l.map(s=>{
     const can=act&&(isAdmin()||same(s.name,me));
-    return `<tr class="border-b">${nm?`<td class="font-semibold">${esc(s.name)}</td>`:''}${dt?`<td>${fmt(s.date)}</td>`:''}<td class="font-semibold ${s.isHO?'text-purple-600':''}">${s.isHO?'HO':'Büro'}</td>${dk?`<td>${esc(s.desk||'-')}</td>`:''}<td>ab ${esc(s.start)} Uhr</td><td>${esc(s.breakTime)}</td>${act?`<td class="whitespace-nowrap">${can?`<button class="btn2" data-edit="${esc(s.id)}">Ändern</button> <button class="btn2 !text-red-600" data-del="${esc(s.id)}">Löschen</button>`:''}</td>`:''}</tr>`;
+    return `<tr class="border-b">${nm?`<td class="font-semibold">${esc(s.name)}</td>`:''}${dt?`<td>${fmt(s.date)}</td>`:''}<td class="font-semibold ${s.isHO?'text-mets-orange-ink':'text-mets-blue'}">${s.isHO?'HO':'Büro'}</td>${dk?`<td>${esc(s.desk||'-')}</td>`:''}<td>ab ${esc(s.start)} Uhr</td><td>${esc(s.breakTime)}</td>${act?`<td class="whitespace-nowrap">${can?`<button class="btn2" data-edit="${esc(s.id)}">Ändern</button> <button class="btn2 !text-red-600" data-del="${esc(s.id)}">Löschen</button>`:''}</td>`:''}</tr>`;
   }).join('')+'</tbody></table></div>';
 }
 
