@@ -95,6 +95,56 @@ async function css() { // Tailwind-CSS so erzeugen, wie es das CDN im Browser tu
     await bild('3-tagesplan.png');
   } else console.log('  (Speichern übersprungen: nach 14 Uhr am Vortag, Regel greift)');
 
+  // ===== Updates =====
+  const appVer = html.match(/const APP_VERSION='([^']+)'/)[1];
+  const fileVer = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).version;
+  ok(appVer === fileVer, `Versionsnummer in index.html (${appVer}) und version.json (${fileVer}) gleich`);
+  ok(/const CACHE = 'schichtplanung-v\d+'/.test(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8')), 'sw.js hat eine CACHE-Version');
+  ok((await page.textContent('#ver-foot')).includes(appVer), 'Versionsnummer steht unten in der App');
+  await page.click('#logout'); await login('admin', 'geheim123');
+  await page.click('[data-tab=set]'); await page.click('#upd-check');
+  await page.waitForFunction(() => document.getElementById('upd-status').textContent.includes('aktuell'));
+  ok(true, 'Einstellungen: "Die App ist aktuell" bei gleicher Version');
+
+  let serverVer = '2099.01.01-1';  // so tun, als gäbe es eine neue Version
+  await page.route('**/version.json*', r => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ version: serverVer }) }));
+  await page.uncheck('#upd-auto');
+  await page.click('#upd-check');
+  await page.waitForSelector('#upd-bar:not(.hidden)');
+  ok((await page.textContent('#upd-status')).includes('2099.01.01-1'), 'Ohne Automatik: Hinweis-Balken + Status "Update verfügbar"');
+  await bild('4-update-hinweis.png');
+  await Promise.all([page.waitForEvent('load'), page.click('#upd-now')]);
+  ok(true, '"Jetzt aktualisieren" lädt die App neu');
+
+  await page.evaluate(() => { localStorage.setItem('sp_autoupd', '1'); sessionStorage.clear(); });
+  serverVer = '2099.01.01-2';
+  await page.waitForSelector('#auth:not(.hidden)');
+  await page.click('#au');   // Nutzer tippt gerade → nicht automatisch neu laden
+  await page.evaluate(() => spUpdateCheck(false));
+  ok(await page.isVisible('#upd-bar'), 'Automatik: während einer Eingabe nur Hinweis, kein Neuladen');
+  await page.evaluate(() => document.activeElement.blur());
+  await Promise.all([page.waitForEvent('load'), page.evaluate(() => spUpdateCheck(false))]);
+  ok(true, 'Automatik: App lädt sich bei neuer Version selbst neu');
+  await page.waitForSelector('#auth:not(.hidden)');
+  await page.evaluate(() => spUpdateCheck(false));
+  ok(await page.isVisible('#upd-bar'), 'Schutz gegen Endlos-Neuladen: beim 2. Mal nur Hinweis');
+
+  // ===== Service Worker (Offline-Kopie, Installierbarkeit) =====
+  const ctx2 = await browser.newContext();
+  const p2 = await ctx2.newPage();
+  p2.on('pageerror', e => { console.log('  Seitenfehler (SW): ' + e.message); fehler++; });
+  for (const [m, b] of [['https://cdn.tailwindcss.com/**', 'window.tailwind={};'], ['https://www.gstatic.com/**', 'export const initializeApp=()=>({});export const getFirestore=()=>({});export const doc=()=>({});export const collection=()=>({});export const setDoc=async()=>{};export const onSnapshot=()=>{};export const runTransaction=async()=>{};export const writeBatch=()=>({});']])
+    await p2.route(m, r => r.fulfill({ contentType: 'text/javascript', body: b }));
+  await p2.goto(url);
+  await p2.evaluate(() => navigator.serviceWorker.ready);
+  await p2.reload();
+  ok(await p2.evaluate(() => !!navigator.serviceWorker.controller), 'Service Worker ist aktiv und steuert die Seite');
+  ok(await p2.evaluate(() => caches.keys()).then(k => k.some(x => /^schichtplanung-v\d+$/.test(x))), 'Service Worker hat seine Kopie angelegt');
+  await ctx2.setOffline(true);
+  await p2.reload();
+  ok((await p2.title()) === 'Schichtplanung', 'Ohne Internet: App-Seite kommt aus der Kopie');
+  await ctx2.close();
+
   await browser.close(); server.close();
   console.log(fehler ? `\n${fehler} Fehler gefunden.` : '\nAlle Prüfungen bestanden.');
   process.exit(fehler ? 1 : 0);
